@@ -17,7 +17,6 @@ package types is
 	
 	type PLAYER is record 
 		x, y: std_logic_vector(15 downto 0);
-		xs, ys : SPDSET; 
 		life: integer range 0 to 3; -- life
 	end record PLAYER;
 	
