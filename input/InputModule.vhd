@@ -5,7 +5,6 @@ use ieee.std_logic_1164.all;
 entity Input_Module is
     port(
         sys_clk: in std_logic;
-        reset: in std_logic;
         ps2_data: in std_logic;
         ps2_clk: in std_logic;
         player_one: out std_logic_vector(4 downto 0);-- 分别指示上下左右 0 W 1 S 2 A 3 D, 4 开火
@@ -17,7 +16,7 @@ end entity;
 architecture bhv of Input_Module is
     component Key_Board is
         port(
-            sys_clk, reset, ps2_clk, data: in std_logic;
+            sys_clk, ps2_clk, data: in std_logic;
             scan_code: out std_logic_vector(7 downto 0)
         );
     end component;
@@ -30,7 +29,6 @@ architecture bhv of Input_Module is
     begin
         my_keyboard: Key_Board port map(
             sys_clk => sys_clk,
-            reset => (not reset),
             data => ps2_data,
             ps2_clk => ps2_clk,
             scan_code => scan_code

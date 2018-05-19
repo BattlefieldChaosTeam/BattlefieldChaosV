@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 
 entity Key_Board is
     port(
-        sys_clk, reset, ps2_clk, data: in std_logic;
+        sys_clk, ps2_clk, data: in std_logic;
         scan_code: out std_logic_vector(7 downto 0)
     );
 end entity;
@@ -27,12 +27,9 @@ architecture bhv of Key_Board is
         p_clk_sample2 <= p_clk_sample1 when rising_edge(sys_clk);
         read_bit_ok <= p_clk_sample2 and (not p_clk_sample1);
 
-        process(sys_clk, reset, read_bit_ok)
+        process(sys_clk, read_bit_ok)
         begin
-            if reset = '1' then
-                state <= start;
-                scan_code <= (others => '0');
-            elsif rising_edge(sys_clk)then
+            if rising_edge(sys_clk) then
                 scan_code <= (others => '0');
                 if read_bit_ok = '1' then
                     case state is
