@@ -3,11 +3,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package types is
-	--type SINGLECOOR is array(3 downto 0) of integer;
+	--type SINGLECOOR is std_logic_vector(15 downto 0);
 	type BULLET is record
 		x, y: std_logic_vector(15 downto 0);
 		direction: std_logic; --0 represents left, 1 right
-		in_screen: std_logic; --0 represents not in screen, 1 represents in screen
+		in_screen: std_logic;
 	end record BULLET;
 	
 	type SPDSET is record

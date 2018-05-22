@@ -21,8 +21,21 @@ begin
 	variable cnt : integer := 50;
 	begin
 	
-		x <= p.x + p.xs.spd;
-		y <= p.y + p.ys.spd;
+		if(rising_edge(clk)) then 
+	
+			if(p.xs.dir = '0') then
+				x <= p.x - p.xs.spd;
+			else
+				x <= p.x + p.xs.spd;
+			end if;
+			
+			if(p.ys.dir = '0') then
+				y <= p.y - p.ys.spd;
+			else 
+				y <= p.y + p.ys.spd;
+			end if;
+		
+		end if;
 	
 	end process;
 	

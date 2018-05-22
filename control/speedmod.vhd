@@ -31,7 +31,7 @@ begin
 	variable cnt : integer := 50;
 	begin
 	
-		if(rst = '0') then
+		if(rst = '1') then
 		
 			xs <= p.xs;
 			ys <= p.ys;
@@ -82,6 +82,10 @@ begin
 						elsif (xs.dir = '1' and r = '1') then
 							xs.spd <= zerospd;
 						end if;
+					
+					when others =>
+						
+						if(cnt > 50) then cnt := 49; end if;
 						
 					end case;
 					
@@ -114,6 +118,10 @@ begin
 						ys.spd <= zerospd;
 						ys.dir <= '1';
 					end if;
+				
+				when others =>
+						
+					if(cnt > 50) then cnt := 49; end if;
 					
 			end case;
 				
