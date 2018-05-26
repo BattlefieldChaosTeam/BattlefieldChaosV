@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 
 entity Screen is
     port(
-        clk_100M: in std_logic; -- 100MHz时钟
+        clk_25M: in std_logic; -- 25MHz时钟
         req_x: out integer range 0 to 639; -- 向渲染模块请求的坐标
         req_y: out integer range 0 to 479;
         res_r, res_g, res_b: in std_logic_vector(2 downto 0); -- 渲染模块输出的rgb值
@@ -14,26 +14,10 @@ entity Screen is
 end entity;
 
 architecture bhv of Screen is
-    signal clk_25M: std_logic;
-    signal clk_50M: std_logic;
     signal cur_x: integer range 0 to 799 := 0;
     signal cur_y: integer range 0 to 524 := 0;
 
     begin
-        process(clk_100M)
-        begin
-            if rising_edge(clk_100M) then
-                clk_50M <= not clk_50M;
-            end if;
-        end process;
-
-        process(clk_50M) -- 分频得到25M
-        begin
-            if rising_edge(clk_50M) then
-                clk_25M <= not clk_25M;
-            end if;
-        end process;
-
         process(clk_25M)
         begin
             if rising_edge(clk_25M) then

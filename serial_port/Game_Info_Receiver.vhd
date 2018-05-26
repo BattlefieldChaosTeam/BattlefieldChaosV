@@ -5,7 +5,7 @@ use work.types.all;
 
 entity Game_Info_Receiver is
     port(
-        sys_clk: in std_logic; -- 系统时钟
+        sys_clk: in std_logic; -- 系统时钟，请给25M的时钟
         clk: in std_logic; -- 此时钟为杜邦线传来的时钟
         player_data: in std_logic;
         bullet_data: in std_logic;
@@ -176,7 +176,6 @@ architecture bhv of Game_Info_Receiver is
                                 if bullet_data = '1' and and_vector(bullet_extra_frame) = '1' then -- 结束帧检查
                                     cur_bullet_bit <= 0;
                                     cur_bullet_frame <= 0;
-                                    rec_bullets <= bullet_cache; -- 将接收到的信息输出
                                 else
                                     cur_bullet_bit <= 0;
                                     cur_bullet_frame <= 0;
