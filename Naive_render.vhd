@@ -14,45 +14,94 @@ end entity;
 
 architecture bhv of Naive_render is
 
-	component readRom is
+	component readRom0 is
 		port(
 			player_x, player_y : in integer range 0 to 1000; --玩家的左上角坐标
 			cur_x, cur_y : in integer range 0 to 1000; --当前请求像素点的坐标
-			player_dir : in std_logic; --玩家的方向，0表示枪口向左，1表示枪口向右
 			player_num : in std_logic; --玩家编号
 			rout, gout, bout : out std_logic_vector(2 downto 0);
+			tsp : out std_logic;
 			clk : in std_logic --25M的时钟
 		);
-	end component readRom;
+	end component readRom0;
 
-	signal rgb_tep : std_logic_vector(2 downto 0);
-	signal r_tep, g_tep, b_tep : std_logic_vector(2 downto 0);
+	component readRom1 is
+	port(
+		player_x, player_y : in integer range 0 to 1000; --玩家的左上角坐标
+		cur_x, cur_y : in integer range 0 to 1000; --当前请求像素点的坐标
+		player_num : in std_logic; --玩家编号
+		rout, gout, bout : out std_logic_vector(2 downto 0);
+		tsp : out std_logic;
+		clk : in std_logic --25M的时钟
+	);
+	end component readRom1;
+	
+	component readHeart is
+	port(
+		player_x, player_y : in integer range 0 to 1000; --左上角坐标
+		cur_x, cur_y : in integer range 0 to 1000; --当前请求像素点的坐标
+		rout, gout, bout : out std_logic_vector(2 downto 0);
+		tsp: out std_logic; --transparent, 0为透明
+		clk : in std_logic --25M的时钟
+	);
+	end component readHeart;
+
+
+	signal r_tep1_1, g_tep1_1, b_tep1_1 : std_logic_vector(2 downto 0);
+	signal r_tep2_1, g_tep2_1, b_tep2_1 : std_logic_vector(2 downto 0);
+	signal r_tep1_2, g_tep1_2, b_tep1_2 : std_logic_vector(2 downto 0);
+	signal r_tep2_2, g_tep2_2, b_tep2_2 : std_logic_vector(2 downto 0);
+	
+	signal r_heart, g_heart, b_heart : std_logic_vector(2 downto 0);
+	
+	signal tsp_tep1_1, tsp_tep1_2, tsp_tep2_1, tsp_tep2_2, tsp_heart : std_logic;
+	
 	
    begin
-	rgb_whole <= rgb_tep;
-	u1 : readRom port map(200, 200, req_x, req_y, '0', '1', r_tep, g_tep, b_tep, clk_25M);
+
+	u1 : readRom0 port map(0, 0, req_x, req_y, '0', r_tep1_1, g_tep1_1, b_tep1_1, tsp_tep1_1, clk_25M);
+	u2 : readRom1 port map(0, 50, req_x, req_y, '0', r_tep1_2, g_tep1_2, b_tep1_2, tsp_tep1_2, clk_25M);
+	u3 : readRom0 port map(0, 100, req_x, req_y, '1', r_tep2_1, g_tep2_1, b_tep2_1, tsp_tep2_1, clk_25M);
+	u4 : readRom1 port map(0, 150, req_x, req_y, '1', r_tep2_2, g_tep2_2, b_tep2_2, tsp_tep2_2, clk_25M);
+	
+	u5 : readHeart port map(0, 200, req_x, req_y, r_heart, g_heart, b_heart, tsp_heart, clk_25M);
+	
 	process(req_x, req_y)
 	  begin
-		if (req_x >= 0 and req_x < 47 and req_y >= 0 and req_y < 39) then
-			 res_r <= r_tep;
-			 res_g <= g_tep;
-			 res_b <= b_tep;
+		if (req_x >= 0 and req_x < 27 and req_y >= 0 and req_y < 40) then
+			if(tsp_tep1_1 = '0') then
+				res_r <= "000";
+			   res_g <= "111";
+			   res_b <= "000";
+			else
+			   res_r <= r_tep1_1;
+			   res_g <= g_tep1_1;
+			   res_b <= b_tep1_1;
+			end if;
 			 --res_r <= "000";
 			 --res_g <= "111";
 			 --res_b <= "000";
-		elsif (req_x >= 200 and req_x < 247 and req_y >= 200 and req_y < 239) then
-			 res_r <= r_tep;
-			 res_g <= g_tep;
-			 res_b <= b_tep;
-			 if(r_tep = "111" and g_tep = "111" and b_tep = "110") then
+		elsif (req_x >= 0 and req_x < 27 and req_y >= 50 and req_y < 90) then
+			if(tsp_tep1_2 = '0') then
 				res_r <= "000";
-				res_g <= "000";
-				res_b <= "111";
-			 else
-				res_r <= r_tep;
-				res_g <= g_tep;
-				res_b <= b_tep; 
-			 end if;
+			   res_g <= "111";
+			   res_b <= "000";
+			else
+			   res_r <= r_tep1_2;
+			   res_g <= g_tep1_2;
+			   res_b <= b_tep1_2;
+			end if;
+		elsif (req_x >= 0 and req_x < 27 and req_y >= 100 and req_y < 135) then
+			if(tsp_tep2_1 = '0') then
+				res_r <= "000";
+			   res_g <= "111";
+			   res_b <= "000";
+			else
+			   res_r <= r_tep2_1;
+			   res_g <= g_tep2_1;
+			   res_b <= b_tep2_1;
+			end if;
+
 			 --res_r(2) <= rgb_tep(2);
 			 --res_g(2) <= rgb_tep(1);
 			 --res_b(2) <= rgb_tep(0);
@@ -65,10 +114,26 @@ architecture bhv of Naive_render is
 			 --res_r <= "100";
 			 --res_g <= "100";
 			 --res_b <= "100";
-		elsif (req_x >= 400 and req_x < 447 and req_y >= 200 and req_y < 239) then
-			 res_r <= "000";
-			 res_g <= "111";
-			 res_b <= "000";
+		elsif (req_x >= 0 and req_x < 27 and req_y >= 150 and req_y < 185) then
+			if(tsp_tep2_2 = '0') then
+				res_r <= "000";
+			   res_g <= "111";
+			   res_b <= "000";
+			else
+			   res_r <= r_tep2_2;
+			   res_g <= g_tep2_2;
+			   res_b <= b_tep2_2;
+			end if;
+		elsif (req_x >= 0 and req_x < 40 and req_y >= 200 and req_y < 244) then
+			if(tsp_heart = '0') then
+				res_r <= "000";
+			   res_g <= "111";
+			   res_b <= "000";
+			else
+			   res_r <= r_heart;
+			   res_g <= g_heart;
+			   res_b <= b_heart;
+			end if;
 		else
 			 res_r <= "000";
 			 res_g <= "000";

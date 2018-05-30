@@ -17,11 +17,9 @@ entity test0 is
 		  cur_out: out std_logic_vector(6 downto 0);
 		  ply1_out: out std_logic_vector(6 downto 0);
 		  ply2_out : out std_logic_vector(6 downto 0);
-		  
-		  M11clk: in std_logic; -- Serial Port Clk
-		  M11clkout: out std_logic; -- Serial Port Clk out
-		  Serialkeyboard_in: in std_logic; -- Serial Port Keyboard Input
-		  Serialinfo_bullet, Serialinfo_player, Serialinfo_headclk: out std_logic
+		  M11clk: in std_logic;
+		  Serial_player_in, Serial_bullet_in, Serial_headclk: in std_logic;
+		  Serial_keyboard_out: out std_logic
 		  );
 	
 	function encode_number(x : in std_logic_vector) return std_logic_vector is
@@ -55,7 +53,7 @@ architecture test0_beh of test0 is
 			  res_r, res_g, res_b: out std_logic_vector(2 downto 0) -- 返回的rgb值
 		 );
 	end component Renderer;
-	
+
 	component Screen is
 		 port(
 			  clk_25M: in std_logic; -- 25MHz时钟
@@ -65,19 +63,11 @@ architecture test0_beh of test0 is
 			  hs, vs: out std_logic; -- 行同步，场同步信号
 			  r, g, b: out std_logic_vector(2 downto 0) -- 颜色输出
 		 );
-	end component;
+	end component Screen;
 
 	component logic_controller is
 		port(
-			rst, clk: in std_logic;
-			player_one_input: in std_logic_vector(4 downto 0);
-			player_two_input: in std_logic_vector(4 downto 0);
-			enter: in std_logic;
-			bullets_output: out BULLETS;
-			players_output: out PLAYERS;
-			barriers_output:out BARRIERS;
-			curs:out std_logic_vector(2 downto 0);
-			xout : out std_logic_vector(15 downto 0)
+			barriers:out BARRIERS
 		);
 	end component logic_controller;
 	
@@ -92,11 +82,6 @@ architecture test0_beh of test0 is
 		 );
 	end component Input_Module;
 	
-	component slowclk is
-		key_out:out std_logic_vector(4 downto 0)
-		);
-	end component slowclk;
-	
 	component genClk is
 		port(
 		M100clk : in std_logic;
@@ -104,66 +89,53 @@ architecture test0_beh of test0 is
 		);
 	end component genClk;
 	
-	component Keyboard_Receiver is
+	component Game_Info_Receiver is
 		 port(
-			  clk: in std_logic; -- 需要接串口时钟
-			  data: in std_logic; -- 串口数据
-			  player_input: out std_logic_vector(4 downto 0)
+			  sys_clk: in std_logic; -- 系统时钟，请给25M的时钟
+			  clk: in std_logic; -- 此时钟为杜邦线传来的时钟
+			  player_data: in std_logic;
+			  bullet_data: in std_logic;
+			  rec_players: out PLAYERS;
+			  rec_bullets: out BULLETS;
+			  head_clk: in std_logic
 		 );
 	end component;
 	
-	component Game_Info_Sender is
+	component Keyboard_Sender is
 		 port(
-			  clk: in std_logic; -- 11M时钟
-			  player_array: in PLAYERS;
-			  bullet_array: in BULLETS;
-			  bullet_data: out std_logic;
-			  player_data: out std_logic;
-			  head_clk: out std_logic
+			  clk: in std_logic;
+			  player_input: in std_logic_vector(4 downto 0);
+			  data: out std_logic
 		 );
 	end component;
 	
-	signal M25clk : std_logic;
-	signal p1_keyboard, p2_keyboard, nouse_keyboard: std_logic_vector(4 downto 0);
+	signal p1_keyboard, p2_keyboard, nouse_keyboard : std_logic_vector(4 downto 0);
 	signal p1_slow, p2_slow : std_logic_vector(4 downto 0);
 	signal req_x, req_y : integer;
 	signal res_r, res_g, res_b : std_logic_vector(2 downto 0);
 	signal ctrl_rst, ctrl_clk : std_logic;
+	signal key_enter : std_logic;
 	
 	signal bullets_out : BULLETS;
 	signal players_out : PLAYERS;
 	signal barriers_out: BARRIERS;
-	signal curstate:  std_logic_vector(2 downto 0);
-	signal xout : std_logic_vector(15 downto 0);
-	signal clk_slow : std_logic;
-	signal clk_slow4 : std_logic_vector(4 downto 0);
 	
-	signal Serialinfo_Clk : std_logic;
-	signal Serialkeyboard_Clk : std_logic;
+	signal M25clk : std_logic;
 	
 begin
-	
 	-- Input Module
-	IP: Input_Module port map(M100clk, ps2_data, ps2_clk, p1_keyboard, nouse_keyboard, key_enter);
-	SCLK: slowclk port map(M100clk, p1_keyboard, p1_slow);
-	SCLK2:slowclk port map(M100clk, p2_keyboard, p2_slow);
+	IP: Input_Module port map(M100clk, ps2_data, ps2_clk, p2_keyboard, nouse_keyboard, key_enter);
 	
-	-- Logic Control Module
-	LC: logic_controller port map(reset, M100clk, p1_slow, p2_slow, '1', bullets_out, players_out, barriers_out, curstate, xout);
+	-- Barriers Generate
+	LC: logic_controller port map(barriers_out);
 	
-	-- Display Module
+	-- Display
 	GK: genClk port map(M100clk, M25clk);
 	SCR: Screen port map(M25clk, req_x, req_y, res_r, res_g, res_b, hs, vs, r, g, b);
-	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 0, res_r, res_g, res_b);
+	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b);
 	
-	-- Port Module
-	Serialinfo_Clk <= M11clk;
-	Serialkeyboard_Clk <= M11clk;
-	KR: Keyboard_Receiver port map(Serialkeyboard_Clk, Serialkeyboard_in, p2_keyboard);
-	GIS: Game_Info_Sender port map(Serialinfo_Clk, players_out, bullets_out, Serialinfo_bullet, Serialinfo_player, Serialinfo_headclk);
-	
-	cur_out <= encode_number("0000");
-	ply1_out <= encode_number(p1_keyboard(3 downto 0));
-	ply2_out <= encode_number(xout(3 downto 0));
+	-- Serial Port
+	GIR: Game_Info_Receiver port map(M25clk, M11clk, Serial_player_in, Serial_bullet_in, players_out, bullets_out, Serial_headclk);
+	KS: Keyboard_Sender port map(M11clk, p2_keyboard, Serial_keyboard_out);
 	
 end architecture test0_beh;

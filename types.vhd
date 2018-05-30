@@ -6,19 +6,21 @@ package types is
 	--type SINGLECOOR is std_logic_vector(15 downto 0);
 	type BULLET is record
 		x, y: std_logic_vector(15 downto 0);
-		direction: std_logic; --0 represents left, 1 right
+		dir: std_logic; --0 represents left, 1 right
 		in_screen: std_logic;
 	end record BULLET;
 	
 	type SPDSET is record
 		spd, acc : std_logic_vector(15 downto 0);
 		dir : std_logic;
+		lst : std_logic_vector(15 downto 0);
+		lst2: std_logic_vector(15 downto 0);
 	end record SPDSET;
 	
 	type PLAYER is record 
 		x, y: std_logic_vector(15 downto 0);
 		xs, ys : SPDSET; 
-		life: integer range 0 to 3; -- life
+		life: std_logic_vector(3 downto 0); -- life
 	end record PLAYER;
 	
 	type BARRIER is record
@@ -30,5 +32,9 @@ package types is
 	type BULLETS is array (0 to 20) of BULLET;
 	
 	type PLAYERS is array (0 to 1) of PLAYER;
+	
+	constant PLY_X : std_logic_vector(4 downto 0) := "01010";
+	constant PLY_Y : std_logic_vector(4 downto 0) := "10010";
+	constant BLT_L : std_logic_vector(4 downto 0) := "00110";
 	
 end types;
