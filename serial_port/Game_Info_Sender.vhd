@@ -12,7 +12,7 @@ entity Game_Info_Sender is
         bullet_array: in BULLETS;
         bullet_data: out std_logic;
         player_data: out std_logic;
-        head_clk: out std_logic
+        head_clk: in std_logic -- 这个信号为0时代表帧头
     );
 end entity;
 
@@ -57,7 +57,10 @@ architecture bhv of Game_Info_Sender is
 
         process(clk, bullet_array, bullet_cache) -- 子弹信息发送
         begin
-            if rising_edge(clk) then
+            if head_clk = '0' then
+                cur_bullet <= 0;
+                cur_bullet_bit <= 0;
+            elsif rising_edge(clk) then
                 if cur_bullet = 0 then -- 开始帧
                     if cur_bullet_bit >= 0 and cur_bullet_bit <= 34 then -- 开始位到校验位全是0
                         bullet_data <= '0';
@@ -98,30 +101,19 @@ architecture bhv of Game_Info_Sender is
                         bullet_data <= '1';
                     end if;
 
-                    if cur_bullet_bit = 35 then
-                        cur_bullet_bit <= 0;
-                        cur_bullet <= 0;
-                    else
+                    if cur_bullet_bit /= 35 then
                         cur_bullet_bit <= cur_bullet_bit + 1;
                     end if;
                 end if;
             end if;
         end process;
 
-        process(clk, cur_bullet, cur_bullet_bit)
-        begin
-            if rising_edge(clk) then
-                if cur_bullet = 21 and cur_bullet_bit = 35 then
-                    head_clk <= '0';
-                else
-                    head_clk <= '1';
-                end if;
-            end if;
-        end process;
-
         process(clk, player_array, player_cache) -- 玩家信息发送进程
         begin
-            if rising_edge(clk) then
+            if head_clk = '0' then
+                cur_player <= 0;
+                cur_player_bit <= 0;
+            elsif rising_edge(clk) then
                 if cur_player = 0 then -- 开始帧
                     if cur_player_bit >= 0 and cur_player_bit <= 35 then
                         player_data <= '0';
@@ -163,10 +155,7 @@ architecture bhv of Game_Info_Sender is
                         player_data <= '1';
                     end if;
 
-                    if cur_player_bit = 36 then
-                        cur_player_bit <= 0;
-                        cur_player <= 0;
-                    else
+                    if cur_player_bit /= 36 then
                         cur_player_bit <= cur_player_bit + 1;
                     end if;
                 end if;

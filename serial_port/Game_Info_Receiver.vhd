@@ -191,7 +191,10 @@ architecture bhv of Game_Info_Receiver is
         begin
             if rising_edge(sys_clk) then
                 if read_bit_ok = '1' then
-                    if cur_player_frame = 0 then -- 开始帧
+                    if head_clk = '0' then
+                        cur_player_frame <= 0;
+                        cur_player_bit <= 0;
+                    elsif cur_player_frame = 0 then -- 开始帧
                         if cur_player_bit = 0 then -- 开始位
                             if player_data = '0' then
                                 cur_player_bit <= cur_player_bit + 1;

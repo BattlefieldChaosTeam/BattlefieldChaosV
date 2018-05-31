@@ -27,7 +27,8 @@ architecture bhv of Renderer is
 
     constant PLAYER_ONE_PIXEL: Pixel := (r => "111", g => "000", b => "000", valid => true);
     constant PLAYER_TWO_PIXEL: Pixel := (r => "000", g => "000", b => "111", valid => true);
-    constant len_of_player: std_logic_vector(5 downto 0) := "101000";
+    constant len_of_player_x: std_logic_vector(4 downto 0) := PLY_X;
+    constant len_of_player_y: std_logic_vector(4 downto 0) := PLY_Y;
     constant len_of_bullet: std_logic_vector(3 downto 0) := "1010";
 
     signal game_x, game_y: std_logic_vector(15 downto 0); -- 全局坐标
@@ -95,9 +96,9 @@ architecture bhv of Renderer is
 
         process(game_x, game_y, player_array)
         begin
-            if game_x >= player_array(0).x and game_x < player_array(0).x + len_of_player and game_y >= player_array(0).y and game_y < player_array(0).y + len_of_player then
+            if game_x >= player_array(0).x and game_x < player_array(0).x + len_of_player_x and game_y >= player_array(0).y and game_y < player_array(0).y + len_of_player_y then
                 player_pixel <= PLAYER_ONE_PIXEL;
-            elsif game_x >= player_array(1).x and game_x < player_array(1).x + len_of_player and game_y >= player_array(1).y and game_y < player_array(1).y + len_of_player then
+            elsif game_x >= player_array(1).x and game_x < player_array(1).x + len_of_player_x and game_y >= player_array(1).y and game_y < player_array(1).y + len_of_player_y then
                 player_pixel <= PLAYER_TWO_PIXEL;
             else
                 player_pixel <= (r => "000", g => "000", b => "000", valid => false);
