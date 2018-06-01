@@ -55,7 +55,7 @@ architecture bhv of Game_Info_Sender is
             end if;
         end process;
 
-        process(clk, bullet_array, bullet_cache) -- 子弹信息发送
+        process(clk, bullet_array, bullet_cache, head_clk) -- 子弹信息发送
         begin
             if head_clk = '0' then
                 cur_bullet <= 0;
@@ -108,7 +108,7 @@ architecture bhv of Game_Info_Sender is
             end if;
         end process;
 
-        process(clk, player_array, player_cache) -- 玩家信息发送进程
+        process(clk, player_array, player_cache, head_clk) -- 玩家信息发送进程
         begin
             if head_clk = '0' then
                 cur_player <= 0;

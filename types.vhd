@@ -33,8 +33,15 @@ package types is
 	
 	type PLAYERS is array (0 to 1) of PLAYER;
 	
-	constant PLY_X : std_logic_vector(4 downto 0) := "01010";
-	constant PLY_Y : std_logic_vector(4 downto 0) := "10010";
+	constant PLY_X : std_logic_vector(4 downto 0) := "10100"; -- 20
+	constant PLY_Y : std_logic_vector(4 downto 0) := "11110"; -- 30
 	constant BLT_L : std_logic_vector(4 downto 0) := "00110";
+
+	type Pixel is record
+		r: std_logic_vector(2 downto 0);
+		g: std_logic_vector(2 downto 0);
+		b: std_logic_vector(2 downto 0);
+		valid: boolean; -- 指示该像素是否有效
+	end record;
 	
 end types;
