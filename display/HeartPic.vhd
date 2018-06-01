@@ -3,21 +3,20 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 use work.types.all;
 
-entity readHeart is
+entity HeartPic is
 	port(
-		ply1_life, ply2_life: in integer range 0 to 3;
+		ply1_life, ply2_life: in std_logic_vector(3 downto 0);
 		pic_x: in integer range 0 to 639; --传入的是640*480坐标系的坐标
-		pic_y: in integer range 0 to 479
-		player_num : in std_logic;
+		pic_y: in integer range 0 to 479;
 		pixel_out: out Pixel;
 		clk : in std_logic --25M的时钟
 	);
-end entity readHeart;
+end entity HeartPic;
 
-architecture bhv_readHeart of readHeart is
+architecture bhv_readHeart of HeartPic is
 
 	component heart IS
 	PORT
@@ -34,16 +33,21 @@ signal addr : std_logic_vector(10 downto 0) := (others => '0');
 signal rgba : std_logic_vector(9 downto 0);	--输出结果
 
 signal addrInt : integer range 0 to 3000 := 0;
-signal judge_valid : in std_logic;
+
+signal ply1_life_int: integer range 0 to 3;
+signal ply2_life_int: integer range 0 to 3;
+
 begin
+	ply1_life_int <= conv_integer(unsigned(ply1_life));
+	ply2_life_int <= conv_integer(unsigned(ply2_life));
 	u : heart port map(address => addr, clock => clk, q => rgba);
 
-	addrInt <= pic_y * 40 + pic_x when (0 <= pic_y and pic_y < 44 and 0 <= pic_x and pic_x < 40 and ply1_life >= 1) else
-				pic_y * 40 + (pic_x - 40) when (0 <= pic_y and pic_y < 44 and 40 <= pic_x and pic_x < 80 and ply1_life >= 2) else
-				pic_y * 40 + (pic_x - 80) when (0 <= pic_y and pic_y < 44 and 80 <= pic_x and pic_x < 120 and ply1_life >= 3) else
-				pic_y * 40 + (pic_x - 600) when (0 <= pic_y and pic_y < 44 and 600 <= pic_x and pic_x < 640 and ply2_life >= 3) else
-				pic_y * 40 + (pic_x - 560) when (0 <= pic_y and pic_y < 44 and 560 <= pic_x and pic_x < 600 and ply2_life >= 2) else
-				pic_y * 40 + (pic_x - 520) when (0 <= pic_y and pic_y < 44 and 520 <= pic_x and pic_x < 560 and ply2_life >= 1) else
+	addrInt <= pic_y * 40 + pic_x when (0 <= pic_y and pic_y < 44 and 0 <= pic_x and pic_x < 40 and ply1_life_int >= 1) else
+				pic_y * 40 + (pic_x - 40) when (0 <= pic_y and pic_y < 44 and 40 <= pic_x and pic_x < 80 and ply1_life_int >= 2) else
+				pic_y * 40 + (pic_x - 80) when (0 <= pic_y and pic_y < 44 and 80 <= pic_x and pic_x < 120 and ply1_life_int >= 3) else
+				pic_y * 40 + (pic_x - 600) when (0 <= pic_y and pic_y < 44 and 600 <= pic_x and pic_x < 640 and ply2_life_int >= 3) else
+				pic_y * 40 + (pic_x - 560) when (0 <= pic_y and pic_y < 44 and 560 <= pic_x and pic_x < 600 and ply2_life_int >= 2) else
+				pic_y * 40 + (pic_x - 520) when (0 <= pic_y and pic_y < 44 and 520 <= pic_x and pic_x < 560 and ply2_life_int >= 1) else
 				2000;
 
 	addr <= conv_std_logic_vector(addrInt, 11);

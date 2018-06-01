@@ -19,8 +19,6 @@ entity Renderer is
 end entity;
 
 architecture bhv of Renderer is
-    --constant len_of_player_x: std_logic_vector(4 downto 0) := PLY_X;
-    --constant len_of_player_y: std_logic_vector(4 downto 0) := PLY_Y;
     constant len_of_bullet: std_logic_vector(3 downto 0) := "1010";
 
     signal game_x, game_y: std_logic_vector(15 downto 0); -- 全局坐标
@@ -91,6 +89,18 @@ architecture bhv of Renderer is
     signal right_player_one_pix: Pixel;
     signal right_player_two_pix: Pixel;
 
+    component HeartPic is
+        port(
+            ply1_life, ply2_life: in std_logic_vector(3 downto 0);
+            pic_x: in integer range 0 to 639; --传入的是640*480坐标系的坐标
+            pic_y: in integer range 0 to 479;
+            pixel_out: out Pixel;
+            clk : in std_logic --25M的时钟
+        );
+    end component;
+
+    signal heart_pixel: Pixel;
+
     begin
         center_x <= HALF_SCREEN_WID when player_array(which_player).x < HALF_SCREEN_WID else
                     (GAME_WID - HALF_SCREEN_WID) when player_array(which_player).x > (GAME_WID - HALF_SCREEN_WID) else
@@ -100,15 +110,18 @@ architecture bhv of Renderer is
                     player_array(which_player).y;
         game_x <= std_logic_vector(to_unsigned(req_x, 16)) + center_x - HALF_SCREEN_WID;
         game_y <= std_logic_vector(to_unsigned(req_y, 16)) + center_y - HALF_SCREEN_HEI;
-        res_r <= player_pixel.r when player_pixel.valid else
+        res_r <= heart_pixel.r when heart_pixel.valid else
+                 player_pixel.r when player_pixel.valid else
                  bullet_pixel.r when bullet_pixel.valid else
                  barrier_pixel.r when barrier_pixel.valid else
                  "000";
-        res_g <= player_pixel.g when player_pixel.valid else
+        res_g <= heart_pixel.g when heart_pixel.valid else
+                 player_pixel.g when player_pixel.valid else
                  bullet_pixel.g when bullet_pixel.valid else
                  barrier_pixel.g when barrier_pixel.valid else
                  "000";
-        res_b <= player_pixel.b when player_pixel.valid else
+        res_b <= heart_pixel.b when heart_pixel.valid else
+                 player_pixel.b when player_pixel.valid else
                  bullet_pixel.b when bullet_pixel.valid else
                  barrier_pixel.b when barrier_pixel.valid else
                  "000";
@@ -160,17 +173,14 @@ architecture bhv of Renderer is
         player_pixel <= player_one_pixel when  player_one_pixel.valid else
                         player_two_pixel;
 
-
-        --process(game_x, game_y, player_array)
-        --begin
-        --    if game_x >= player_array(0).x and game_x < player_array(0).x + len_of_player_x and game_y >= player_array(0).y and game_y < player_array(0).y + len_of_player_y then
-        --        player_pixel <= PLAYER_ONE_PIXEL;
-        --    elsif game_x >= player_array(1).x and game_x < player_array(1).x + len_of_player_x and game_y >= player_array(1).y and game_y < player_array(1).y + len_of_player_y then
-        --        player_pixel <= PLAYER_TWO_PIXEL;
-        --    else
-        --        player_pixel <= (r => "000", g => "000", b => "000", valid => false);
-        --    end if;
-        --end process;
+        my_heart_pic: HeartPic port map(
+            ply1_life => player_array(0).life,
+            ply2_life => player_array(1).life,
+            pic_x => req_x,
+            pic_y => req_y,
+            pixel_out => heart_pixel,
+            clk => clk_25M
+        );
 
         process(game_x, game_y, bullet_array)
         begin

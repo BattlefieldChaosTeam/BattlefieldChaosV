@@ -68,6 +68,7 @@ begin
 					players(0).ys.spd <= "0000000000000000";
 					players(0).ys.dir <= '1';
 					players(0).ys.acc <= "0000000000000001";
+					players(0).life <= "0011";
 					
 					players(1).x <= "0001001000100000";
 					players(1).y <= "0000111101110000";
@@ -77,6 +78,7 @@ begin
 					players(1).ys.spd <= "0000000000000000";
 					players(1).ys.dir <= '1';
 					players(1).ys.acc <= "0000000000000001";
+					players(1).life <= "0011";
 					
 					cur <= init_final;
 					cnt <= 0;
