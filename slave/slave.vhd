@@ -139,7 +139,7 @@ begin
 	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk);
 	
 	-- Serial Port
-	GIR: Game_Info_Receiver port map(M25clk, M11clk, Serial_player_in, Serial_bullet_in, players_out, bullets_out, Serial_headclk);
+	GIR: Game_Info_Receiver port map(not M25clk, M11clk, Serial_player_in, Serial_bullet_in, players_out, bullets_out, Serial_headclk);
 	KS: Keyboard_Sender port map(M100clk, M11clk, p2_keyboard, Serial_keyboard_out, Serial_headclk);
 	
 end architecture;

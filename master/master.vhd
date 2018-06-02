@@ -153,14 +153,11 @@ architecture bhv of master is
 begin
 
 	-- generate head_clk
-	process(M100clk)
+	process(M11clk)
 	begin
-		if rising_edge(M100clk) then
-			if my_head_cnt > 4950 and my_head_cnt < 5000 then
+		if rising_edge(M11clk) then
+			if my_head_cnt = 5000 then
 				my_head_clk <= '0';
-				my_head_cnt <= my_head_cnt + 1;
-			elsif my_head_cnt = 5000 then
-				my_head_clk <= '1';
 				my_head_cnt <= 0;
 			else
 				my_head_clk <= '1';
