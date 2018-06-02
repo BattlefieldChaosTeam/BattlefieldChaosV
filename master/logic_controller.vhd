@@ -87,6 +87,16 @@ architecture logic_controller_bhv of logic_controller is
 			dir_hit : out std_logic);
 	end component;
 	
+	component judgeDead is 
+		port(
+			rst, clk: in std_logic;
+			in_player: in PLAYER;
+			pdl: out std_logic_vector(3 downto 0);
+			pdx, pdy: out std_logic_vector(15 downto 0);
+			gameOver: out std_logic
+			);
+	end component judgeDead;
+	
 	signal bullets, bullets_init, bullets_nxt, bullets_shot, bullets_hit1, bullets_hit2: BULLETS;
 	signal barriers, barriers_init : BARRIERS;
 	signal players, players_init, players_tmp: PLAYERS;
@@ -104,6 +114,7 @@ architecture logic_controller_bhv of logic_controller is
 	signal emit_enable, shot_enable : std_logic;
 	signal wallhit_enable, wallhit2_enable: std_logic;
 	signal bulhit1_enable, bulhit2_enable: std_logic;
+	signal jdead1_enable, jdead2_enable: std_logic;
 	
 	-- Bullet Hit Module
 	signal ishit1, dirhit1, ishit2, dirhit2 : std_logic;
@@ -122,6 +133,12 @@ architecture logic_controller_bhv of logic_controller is
 	-- Speed Modify Module
 	signal p1_nxt_xspd, p1_nxt_yspd : SPDSET;
 	signal p2_nxt_xspd, p2_nxt_yspd : SPDSET;
+	
+	-- Judge Dead Module
+	signal gameover1, gameover2: std_logic;
+	signal pdl1, pdl2: std_logic_vector(3 downto 0);
+	signal pdy1, pdy2: std_logic_vector(15 downto 0);
+	signal pdx1, pdx2: std_logic_vector(15 downto 0);
 	
 	signal tpbit : std_logic;
 	signal tpbit1 : std_logic;
@@ -149,23 +166,20 @@ begin
 	BULLETHIT1: bullethit port map(bulhit1_enable, clk, players_tmp(0).x, players_tmp(0).y, bullets, bullets_hit1, ishit1_t, dirhit1_t);
 	BULLETHIT2: bullethit port map(bulhit2_enable, clk, players_tmp(1).x, players_tmp(1).y, bullets, bullets_hit2, ishit2_t, dirhit2_t);
 	
+	JD1: judgeDead port map(jdead1_enable, clk, players(0), pdl1, pdx1, pdy1, gameover1);
+	JD2: judgeDead port map(jdead2_enable, clk, players(1), pdl2, pdx2, pdy2, gameover2);
+	
 	bullets_output <= bullets;
 	barriers_output <= barriers;
 	players_output <= players_tmp;
-	
-	--tpbit <= '1' when players(0).y + PLY_Y >= barriers(2).ay else '0';
-	--tpbit1<= '1' when not (players(0).x + PLY_X <= barriers(2).ax) else '0';
-	--tpbit2<= '1' when not (players(0).x > barriers(2).bx) else '0';
-	--xout <= "0000000000000"&tpbit&tpbit1&tpbit2;
-	xout <= "0000000000000"&players_tmp(1).y(3)&players_tmp(1).y(2)&players_tmp(1).y(1);
-	--if(y <= ay and y + wy + pls >= ay and (not x + wx <= ax) and (not x > bx))
+
+	xout <= "000000000000"&players(0).life;
+	curs <= players(1).life(2 downto 0);
 	
 	process(clk, rst)
 	variable rising_count : integer := 0;
 	begin
 		if(rst = '0') then -- to be added
-			
-			curs <= "000";
 			
 			cur_state <= init_state;
 			rising_count := 0;
@@ -176,6 +190,7 @@ begin
 			wallhit_enable <= '1'; wallhit2_enable <= '1';
 			bulhit1_enable <= '1'; bulhit2_enable <= '1';
 			emit_enable <= '1';    shot_enable <= '1';
+			jdead1_enable <= '1';  jdead2_enable <= '1'; 
 			
 		elsif(rising_edge(clk)) then
 		
@@ -197,6 +212,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 50000=>
 							bullets <= bullets_init;
@@ -222,10 +238,6 @@ begin
 							barriers(4).by <= "0000000101110110";
 						
 						when 95000=>
-							players(0).x <= "0001000000000000";
-							players(0).y <= "0000101110110000";
-							players(1).x <= "0001000100100000";
-							players(1).y <= "0000101110110000";
 						
 						when others=>
 							
@@ -249,6 +261,7 @@ begin
 							wallhit_enable <= '0'; wallhit2_enable <= '0';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 5000=> -- Wall Hit Module Set
 						
@@ -266,6 +279,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '0'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 8000=> -- Bullet Hit1 Module Set
 							
@@ -281,6 +295,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '0';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 10000=> -- Bullet Hit2 Module Set
 							
@@ -296,6 +311,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 20000=> -- Speed Modify Module Set
 						
@@ -312,6 +328,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 40000=> --  Next Postion (Moving) Module Set
 						
@@ -328,6 +345,7 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '0';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 55000=> -- Emit Bullets Module Set
 						
@@ -341,12 +359,31 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '0';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
 						
 						when 65000=> -- Bullets Move Module Set
 						
 							bullets <= bullets_shot;
 							
-						when 70000=> -- Ending Module
+						when 70000=> -- Judging Dead Module
+							init_enable <= '1';
+							p1move_enable <= '1';  p2move_enable <= '1';
+							p1spdm_enable <= '1';  p2spdm_enable <= '1';
+							wallhit_enable <= '1'; wallhit2_enable <= '1';
+							bulhit1_enable <= '1'; bulhit2_enable <= '1';
+							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '0';  jdead2_enable <= '0'; 
+						
+						when 75000=> -- Judging Dead Module Set
+							
+							players(0).life <= pdl1;
+							players(1).life <= pdl2;
+							players(0).x <= pdx1;
+							players(1).x <= pdx2;
+							players(0).y <= pdy1;
+							players(1).y <= pdy2;
+						
+						when 80000=> -- Ending Module
 						
 							init_enable <= '1';
 							p1move_enable <= '1';  p2move_enable <= '1';
@@ -354,6 +391,8 @@ begin
 							wallhit_enable <= '1'; wallhit2_enable <= '1';
 							bulhit1_enable <= '1'; bulhit2_enable <= '1';
 							emit_enable <= '1';    shot_enable <= '1';
+							jdead1_enable <= '1';  jdead2_enable <= '1'; 
+							
 						
 						when others=>
 					

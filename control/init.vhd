@@ -61,7 +61,7 @@ begin
 				when init_players =>
 				
 					players(0).x <= "0001000000000000";
-					players(0).y <= "0000111101110000";
+					players(0).y <= "0000001100110000";
 					players(0).xs.spd <= "0000000000000000";
 					players(0).xs.dir <= '0';
 					players(0).xs.acc <= "0000000000000000";
@@ -71,7 +71,7 @@ begin
 					players(0).life <= "0011";
 					
 					players(1).x <= "0001001000100000";
-					players(1).y <= "0000111101110000";
+					players(1).y <= "0000001100110000";
 					players(1).xs.spd <= "0000000000000000";
 					players(1).xs.dir <= '0';
 					players(1).xs.acc <= "0000000000000000";

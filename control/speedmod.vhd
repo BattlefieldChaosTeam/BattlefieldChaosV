@@ -28,7 +28,11 @@ architecture speedmod_beh of speedmod is
 	constant mxspd: std_logic_vector(15 downto 0) := "0000000000000100";
 	
 	constant conspd : std_logic_vector(15 downto 0) := "0000000000000100";
-	constant conacc : std_logic_vector(15 downto 0) := "0000000000000100";
+	constant conacc : std_logic_vector(15 downto 0) := "0000000000100000";
+	
+	constant wlkspd : std_logic_vector(15 downto 0) := "0000000000000001";
+	constant wlkacc : std_logic_vector(15 downto 0) := "0000000000000001";
+	
 	constant zerospd: std_logic_vector(15 downto 0) := "0000000000000000";
 	
 begin
@@ -57,39 +61,41 @@ begin
 			
 				xs.spd <= conspd;
 				xs.dir <= not dir_hit;
-				xs.acc <= conacc;
+				xs.lst <= conacc;
 			
 			else -- not hit : free move
 				
 				case cnt is
 				
-					when 1 => -- acc : dir not change
-				
-						if(p.xs.spd <= p.xs.acc) then xs.spd <= zerospd;
-						else xs.spd <= p.xs.spd - p.xs.acc; end if;
+					when 1 => -- lst : imba
 						
-						xs.acc <= p.xs.acc;
-						xs.dir <= p.xs.dir;
+						if(p.xs.lst > 0) then
+							xs.spd <= conspd;
+							xs.lst <= p.xs.lst - "1";
+							xs.dir <= p.xs.dir;
+						else
+							if(key_signal(2) = '1') then -- move left
+								xs.spd <= wlkspd;
+								xs.dir <= '0';
+								xs.lst <= wlkacc;
+							elsif(key_signal(3) = '1') then -- move right
+								xs.spd <= wlkspd;
+								xs.dir <= '1';
+								xs.lst <= wlkacc;
+							else
+								xs.spd <= zerospd;
+								xs.lst <= zerospd;
+							end if;
+							
+						end if;
+						
 					
 					when 7 => -- key : dir may change
 						
-						if(key_signal(2) = '1') then -- move left
-							xs.spd <= conspd;
-							xs.dir <= '0';
-							xs.acc <= conacc;
-						elsif(key_signal(3) = '1') then -- move right
-							xs.spd <= conspd;
-							xs.dir <= '1';
-							xs.acc <= conacc;
-						end if;
+						
 					
 					when 15 => -- wall : block
 						
-						if(xs.dir = '0' and l = '1') then -- l block
-							xs.spd <= zerospd;
-						elsif (xs.dir = '1' and r = '1') then
-							xs.spd <= zerospd;
-						end if;
 					
 					when others =>
 						
