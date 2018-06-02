@@ -168,7 +168,7 @@ architecture bhv of Renderer is
 
         player_one_pixel <= left_player_one_pix when player_array(0).xs.dir = '0' else
                             right_player_one_pix;
-        player_two_pixel <= left_player_two_pix when player_array(1).ys.dir = '0' else
+        player_two_pixel <= left_player_two_pix when player_array(1).xs.dir = '0' else
                             right_player_two_pix;
         player_pixel <= player_one_pixel when  player_one_pixel.valid else
                         player_two_pixel;

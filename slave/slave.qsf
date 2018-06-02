@@ -115,24 +115,6 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLE
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_0
-set_global_assignment -name VHDL_FILE logic_controller.vhd
-set_global_assignment -name VHDL_FILE ../display/GenClk.vhd
-set_global_assignment -name VHDL_FILE ../types.vhd
-set_global_assignment -name VHDL_FILE ../serial_port/Keyboard_Sender.vhd
-set_global_assignment -name VHDL_FILE ../serial_port/Game_Info_Receiver.vhd
-set_global_assignment -name VHDL_FILE ../input/KeyBoard.vhd
-set_global_assignment -name VHDL_FILE ../input/InputModule.vhd
-set_global_assignment -name VHDL_FILE ../display/Screen.vhd
-set_global_assignment -name VHDL_FILE ../display/Renderer.vhd
-set_global_assignment -name VHDL_FILE ../control/xytrans.vhd
-set_global_assignment -name VHDL_FILE ../control/wallhit.vhd
-set_global_assignment -name VHDL_FILE ../control/speedmod.vhd
-set_global_assignment -name VHDL_FILE ../control/nextpos.vhd
-set_global_assignment -name VHDL_FILE ../control/init.vhd
-set_global_assignment -name VHDL_FILE ../control/emitBullets.vhd
-set_global_assignment -name VHDL_FILE ../control/BulletMove.vhd
-set_global_assignment -name VHDL_FILE ../control/bullethit.vhd
-set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "Keyboard_Sender:KS|player_input[0]" -section_id auto_signaltap_0
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "Keyboard_Sender:KS|player_input[1]" -section_id auto_signaltap_0
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "Keyboard_Sender:KS|player_input[2]" -section_id auto_signaltap_0
@@ -161,4 +143,31 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=66" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC_LOWORD=35294" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC_HIWORD=56836" -section_id auto_signaltap_0
+set_global_assignment -name QIP_FILE ../statics/onetotwo.qip
+set_global_assignment -name VHDL_FILE ../statics/onetotwo.vhd
+set_global_assignment -name QIP_FILE ../statics/twototwo.qip
+set_global_assignment -name QIP_FILE ../statics/twotoone.qip
+set_global_assignment -name QIP_FILE ../statics/onetoone.qip
+set_global_assignment -name QIP_FILE ../statics/heart.qip
+set_global_assignment -name VHDL_FILE ../display/RightPlayerPic.vhd
+set_global_assignment -name VHDL_FILE ../display/LeftPlayerPic.vhd
+set_global_assignment -name VHDL_FILE ../display/HeartPic.vhd
+set_global_assignment -name VHDL_FILE logic_controller.vhd
+set_global_assignment -name VHDL_FILE ../display/GenClk.vhd
+set_global_assignment -name VHDL_FILE ../types.vhd
+set_global_assignment -name VHDL_FILE ../serial_port/Keyboard_Sender.vhd
+set_global_assignment -name VHDL_FILE ../serial_port/Game_Info_Receiver.vhd
+set_global_assignment -name VHDL_FILE ../input/KeyBoard.vhd
+set_global_assignment -name VHDL_FILE ../input/InputModule.vhd
+set_global_assignment -name VHDL_FILE ../display/Screen.vhd
+set_global_assignment -name VHDL_FILE ../display/Renderer.vhd
+set_global_assignment -name VHDL_FILE ../control/xytrans.vhd
+set_global_assignment -name VHDL_FILE ../control/wallhit.vhd
+set_global_assignment -name VHDL_FILE ../control/speedmod.vhd
+set_global_assignment -name VHDL_FILE ../control/nextpos.vhd
+set_global_assignment -name VHDL_FILE ../control/init.vhd
+set_global_assignment -name VHDL_FILE ../control/emitBullets.vhd
+set_global_assignment -name VHDL_FILE ../control/BulletMove.vhd
+set_global_assignment -name VHDL_FILE ../control/bullethit.vhd
+set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

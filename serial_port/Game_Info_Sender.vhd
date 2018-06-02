@@ -18,9 +18,9 @@ end entity;
 
 architecture bhv of Game_Info_Sender is
     signal cur_bullet: integer range 0 to 21 := 0; -- 当前正在发送的子弹编号为cur_bullet - 1，0开始帧，21结束帧
-    signal cur_bullet_bit: integer range 0 to 35 := 0; -- 当前正在发送的子弹数据的比特，0开始位，34校验位，35结束位
+    signal cur_bullet_bit: integer range 0 to 36 := 0; -- 当前正在发送的子弹数据的比特，0开始位，35校验位，36结束位
     signal cur_player: integer range 0 to 3 := 0;
-    signal cur_player_bit: integer range 0 to 36 := 0; -- 玩家信息还要多两位，用于生命值
+    signal cur_player_bit: integer range 0 to 37 := 0; -- 玩家信息还要多两位，用于生命值
     signal bullet_cache: BULLETS;
     signal player_cache: PLAYERS;
     signal bullet_odd: std_logic; -- 子弹校验位
@@ -40,7 +40,7 @@ architecture bhv of Game_Info_Sender is
         process(cur_bullet, bullet_cache) -- 生成子弹信息校验位
         begin
             if cur_bullet > 0 and cur_bullet < 21 then
-                bullet_odd <= xor_vector(bullet_cache(cur_bullet - 1).x & bullet_cache(cur_bullet - 1).y);
+                bullet_odd <= xor_vector(bullet_cache(cur_bullet - 1).x & bullet_cache(cur_bullet - 1).y & bullet_cache(cur_bullet - 1).in_screen & bullet_cache(cur_bullet - 1).dir);
             else
                 bullet_odd <= '0';
             end if;
@@ -49,7 +49,7 @@ architecture bhv of Game_Info_Sender is
         process(cur_player, player_cache) -- 生成玩家信息校验位
         begin
             if cur_player > 0 and cur_player < 3 then
-                player_odd <= xor_vector(player_cache(cur_player - 1).x & player_cache(cur_player - 1).y);
+                player_odd <= xor_vector(player_cache(cur_player - 1).x & player_cache(cur_player - 1).y & player_cache(cur_player - 1).life(1 downto 0) & player_cache(cur_player -1 ).xs.dir);
             else
                 player_odd <= '0';
             end if;
@@ -62,7 +62,7 @@ architecture bhv of Game_Info_Sender is
                 cur_bullet_bit <= 0;
             elsif rising_edge(clk) then
                 if cur_bullet = 0 then -- 开始帧
-                    if cur_bullet_bit >= 0 and cur_bullet_bit <= 34 then -- 开始位到校验位全是0
+                    if cur_bullet_bit >= 0 and cur_bullet_bit <= 35 then -- 开始位到校验位全是0
                         bullet_data <= '0';
                         cur_bullet_bit <= cur_bullet_bit + 1;
                     else
@@ -74,21 +74,23 @@ architecture bhv of Game_Info_Sender is
                 elsif cur_bullet > 0 and cur_bullet <= 20 then -- 信息帧
                     if cur_bullet_bit = 0 then -- 开始位
                         bullet_data <= '0';
-                    elsif cur_bullet_bit > 0 and cur_bullet_bit < 34 then -- 数据位
+                    elsif cur_bullet_bit > 0 and cur_bullet_bit < 35 then -- 数据位
                         if cur_bullet_bit < 17 then
                             bullet_data <= bullet_cache(cur_bullet - 1).x(cur_bullet_bit - 1);
                         elsif cur_bullet_bit < 33 then
                             bullet_data <= bullet_cache(cur_bullet - 1).y(cur_bullet_bit - 1 - 16);
-                        else
+                        elsif cur_bullet_bit = 33 then
                             bullet_data <= bullet_cache(cur_bullet - 1).in_screen;
-                        end if;    
-                    elsif cur_bullet_bit = 34 then
+                        elsif cur_bullet_bit = 34 then
+                            bullet_data <= bullet_cache(cur_bullet - 1).dir;
+                        end if;
+                    elsif cur_bullet_bit = 35 then
                         bullet_data <= bullet_odd;
                     else
                         bullet_data <= '1';
                     end if;
 
-                    if cur_bullet_bit = 35 then
+                    if cur_bullet_bit = 36 then
                         cur_bullet_bit <= 0;
                         cur_bullet <= cur_bullet + 1;
                     else
@@ -101,7 +103,7 @@ architecture bhv of Game_Info_Sender is
                         bullet_data <= '1';
                     end if;
 
-                    if cur_bullet_bit /= 35 then
+                    if cur_bullet_bit /= 36 then
                         cur_bullet_bit <= cur_bullet_bit + 1;
                     end if;
                 end if;
@@ -115,7 +117,7 @@ architecture bhv of Game_Info_Sender is
                 cur_player_bit <= 0;
             elsif rising_edge(clk) then
                 if cur_player = 0 then -- 开始帧
-                    if cur_player_bit >= 0 and cur_player_bit <= 35 then
+                    if cur_player_bit >= 0 and cur_player_bit <= 36 then
                         player_data <= '0';
                         cur_player_bit <= cur_player_bit + 1;
                     else
@@ -136,12 +138,14 @@ architecture bhv of Game_Info_Sender is
                     elsif cur_player_bit < 35 then
                         player_data <= player_cache(cur_player - 1).life(cur_player_bit - 33);
                     elsif cur_player_bit = 35 then
+                        player_data <= player_cache(cur_player - 1).xs.dir;
+                    elsif cur_player_bit = 36 then
                         player_data <= player_odd;
                     else
                         player_data <= '1';
                     end if;
 
-                    if cur_player_bit = 36 then
+                    if cur_player_bit = 37 then
                         cur_player_bit <= 0;
                         cur_player <= cur_player + 1;
                     else
@@ -149,13 +153,13 @@ architecture bhv of Game_Info_Sender is
                     end if;
 
                 else -- 结束帧
-                    if cur_player_bit = 0 or cur_player_bit = 35 then
+                    if cur_player_bit = 0 then
                         player_data <= '0';
                     else
                         player_data <= '1';
                     end if;
 
-                    if cur_player_bit /= 36 then
+                    if cur_player_bit /= 37 then
                         cur_player_bit <= cur_player_bit + 1;
                     end if;
                 end if;

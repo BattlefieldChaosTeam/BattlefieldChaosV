@@ -51,7 +51,8 @@ architecture bhv of slave is
 			  player_array: in PLAYERS;
 			  barrier_array: in BARRIERS;
 			  which_player: in integer range 0 to 1; -- 指定玩家的主视角
-			  res_r, res_g, res_b: out std_logic_vector(2 downto 0) -- 返回的rgb值
+			  res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 返回的rgb值
+			  clk_25M: in std_logic
 		 );
 	end component Renderer;
 
@@ -135,7 +136,7 @@ begin
 	-- Display
 	GK: genClk port map(M100clk, M25clk);
 	SCR: Screen port map(M25clk, req_x, req_y, res_r, res_g, res_b, hs, vs, r, g, b);
-	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b);
+	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk);
 	
 	-- Serial Port
 	GIR: Game_Info_Receiver port map(M25clk, M11clk, Serial_player_in, Serial_bullet_in, players_out, bullets_out, Serial_headclk);
