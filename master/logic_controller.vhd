@@ -445,7 +445,7 @@ begin
 							if(players(0).life = "0000") then
 								cur_state <= p1lose;
 								gamestate_output.s <= "110"; -- Final : This play lose; Opponent Win
-							elsif(players(1).life = "0001") then
+							elsif(players(1).life = "0000") then
 								cur_state <= p1win;
 								gamestate_output.s <= "101"; -- Final : This play win; Opponent lose
 							end if;

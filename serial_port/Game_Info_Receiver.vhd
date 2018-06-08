@@ -67,8 +67,8 @@ architecture bhv of Game_Info_Receiver is
     end function;
 
     begin
-        clk_sample1 <= clk when falling_edge(sys_clk);
-        clk_sample2 <= clk_sample1 when falling_edge(sys_clk);
+        clk_sample1 <= clk when rising_edge(sys_clk);
+        clk_sample2 <= clk_sample1 when rising_edge(sys_clk);
         read_bit_ok <= clk_sample1 and (not clk_sample2);
 
         process(cur_bullet_frame, bullet_cache) -- 生成子弹信息校验位
@@ -96,7 +96,7 @@ architecture bhv of Game_Info_Receiver is
 
         process(sys_clk) -- 子弹信息接收
         begin
-            if falling_edge(sys_clk) then
+            if rising_edge(sys_clk) then
                 if read_bit_ok = '1' then
                     if head_clk = '0' then
                         cur_bullet_frame <= 0;
@@ -201,7 +201,7 @@ architecture bhv of Game_Info_Receiver is
 
         process(sys_clk) -- 玩家信息接收
         begin
-            if falling_edge(sys_clk) then
+            if rising_edge(sys_clk) then
                 if read_bit_ok = '1' then
                     if head_clk = '0' then
                         cur_player_frame <= 0;
@@ -304,7 +304,7 @@ architecture bhv of Game_Info_Receiver is
 
         process(sys_clk)
         begin
-            if falling_edge(sys_clk) then
+            if rising_edge(sys_clk) then
                 if read_bit_ok = '1' then
                     if head_clk = '0' then
                         cur_state_bit <= 0;

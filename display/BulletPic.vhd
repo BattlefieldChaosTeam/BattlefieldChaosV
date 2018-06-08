@@ -52,7 +52,7 @@ architecture bhv_bulletPic of BulletPic is
 	return integer is
 	begin 
 		check_loop: for i in 0 to 20 loop
-			if conv_integer(blt_in(i).x) <= pix_x and pix_x < conv_integer(blt_in(i).x + 20) and conv_integer(blt_in(i).y) <= pix_y and pix_y < conv_integer(blt_in(i).y + 5)  and (blt_in(i).in_screen = '1') then
+			if conv_integer(blt_in(i).x) <= pix_x and pix_x < conv_integer(blt_in(i).x + 20) and conv_integer(blt_in(i).y) <= pix_y and pix_y < conv_integer(blt_in(i).y + 16)  and (blt_in(i).in_screen = '1') then
 				return i;
 			end if;
 		end loop;

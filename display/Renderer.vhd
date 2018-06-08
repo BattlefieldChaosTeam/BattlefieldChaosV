@@ -22,7 +22,6 @@ architecture bhv of Renderer is
     constant len_of_bullet: std_logic_vector(3 downto 0) := "1010";
 
     signal game_x, game_y: std_logic_vector(15 downto 0); -- 全局坐标
-    signal center_x, center_y: std_logic_vector(15 downto 0); -- 当前视野的中心坐标
     constant SCREEN_HEI: std_logic_vector(15 downto 0) := "0000000111100000"; -- 480
     constant SCREEN_WID: std_logic_vector(15 downto 0) := "0000001010000000"; -- 640
     constant HALF_SCREEN_WID: std_logic_vector(15 downto 0) := "0000000101000000";
@@ -98,29 +97,58 @@ architecture bhv of Renderer is
     end component;
 
     begin
-        center_x <= HALF_SCREEN_WID when player_array(which_player).x < HALF_SCREEN_WID else
-                    (GAME_WID - HALF_SCREEN_WID) when player_array(which_player).x > (GAME_WID - HALF_SCREEN_WID) else
-                    player_array(which_player).x;
-        center_y <= HALF_SCREEN_HEI when player_array(which_player).y < HALF_SCREEN_HEI else
-                    GAME_HEI - HALF_SCREEN_HEI when player_array(which_player).y > GAME_HEI - HALF_SCREEN_HEI else
-                    player_array(which_player).y;
-        game_x <= std_logic_vector(to_unsigned(req_x, 16)) + center_x - HALF_SCREEN_WID;
-        game_y <= std_logic_vector(to_unsigned(req_y, 16)) + center_y - HALF_SCREEN_HEI;
-        res_r <= heart_pixel.r when heart_pixel.valid else
-                 player_pixel.r when player_pixel.valid else
-                 bullet_pixel.r when bullet_pixel.valid else
-                 barrier_pixel.r when barrier_pixel.valid else
-                 "000";
-        res_g <= heart_pixel.g when heart_pixel.valid else
-                 player_pixel.g when player_pixel.valid else
-                 bullet_pixel.g when bullet_pixel.valid else
-                 barrier_pixel.g when barrier_pixel.valid else
-                 "000";
-        res_b <= heart_pixel.b when heart_pixel.valid else
-                 player_pixel.b when player_pixel.valid else
-                 bullet_pixel.b when bullet_pixel.valid else
-                 barrier_pixel.b when barrier_pixel.valid else
-                 "000";
+        process(clk_25M, player_array)
+        variable center_x, center_y: std_logic_vector(15 downto 0); -- 当前视野的中心坐标
+        begin
+            if rising_edge(clk_25M) then
+                if player_array(which_player).x < HALF_SCREEN_WID then
+                    center_x := HALF_SCREEN_WID;
+                elsif player_array(which_player).x > (GAME_WID - HALF_SCREEN_WID) then
+                    center_x := (GAME_WID - HALF_SCREEN_WID);
+                else
+                    center_x := player_array(which_player).x;
+                end if;
+
+                if player_array(which_player).y < HALF_SCREEN_HEI then
+                    center_y := HALF_SCREEN_HEI;
+                elsif player_array(which_player).y > GAME_HEI - HALF_SCREEN_HEI then
+                    center_y := GAME_HEI - HALF_SCREEN_HEI;
+                else
+                    center_y := player_array(which_player).y;
+                end if;
+
+                game_x <= std_logic_vector(to_unsigned(req_x, 16)) + center_x - HALF_SCREEN_WID;
+                game_y <= std_logic_vector(to_unsigned(req_y, 16)) + center_y - HALF_SCREEN_HEI;
+            end if;
+        end process;
+
+
+        process(clk_25M, heart_pixel, player_pixel, bullet_pixel, barrier_pixel)
+        begin
+            if rising_edge(clk_25M) then
+                if heart_pixel.valid then
+                    res_r <= heart_pixel.r;
+                    res_g <= heart_pixel.g;
+                    res_b <= heart_pixel.b;
+                elsif player_pixel.valid then
+                    res_r <= player_pixel.r;
+                    res_g <= player_pixel.g;
+                    res_b <= player_pixel.b;
+                elsif bullet_pixel.valid then
+                    res_r <= bullet_pixel.r;
+                    res_g <= bullet_pixel.g;
+                    res_b <= bullet_pixel.b;
+                elsif barrier_pixel.valid then
+                    res_r <= barrier_pixel.r;
+                    res_g <= barrier_pixel.g;
+                    res_b <= barrier_pixel.b;
+                else
+                    res_r <= "000";
+                    res_g <= "000";
+                    res_b <= "000";
+                end if;
+            end if;
+        end process;
 
         my_left_player_one: LeftPlayerPic port map(
             player_x => to_integer(unsigned(player_array(0).x)),
@@ -186,12 +214,14 @@ architecture bhv of Renderer is
             clk => clk_25M
         );
 
-        process(game_x, game_y, barrier_array)
+        process(clk_25M, game_x, game_y, barrier_array)
         begin
-            if check_for_barrier(game_x, game_y) then
-                barrier_pixel <= (r => "111", g => "111", b => "111", valid => true);
-            else
-                barrier_pixel <= (r => "000", g => "000", b => "000", valid => false);
+            if rising_edge(clk_25M) then
+                if check_for_barrier(game_x, game_y) then
+                    barrier_pixel <= (r => "111", g => "111", b => "111", valid => true);
+                else
+                    barrier_pixel <= (r => "000", g => "000", b => "000", valid => false);
+                end if;
             end if;
         end process;
     end architecture;

@@ -97,10 +97,10 @@ architecture bhv of slave is
 			  clk: in std_logic; -- 此时钟为杜邦线传来的时钟
 			  player_data: in std_logic;
 			  bullet_data: in std_logic;
-			game_state_data: in std_logic;
+			  game_state_data: in std_logic;
 			  rec_players: out PLAYERS;
 			  rec_bullets: out BULLETS;
-			rec_game_state: out GAMESTATE;
+			  rec_game_state: out GAMESTATE;
 			  head_clk: in std_logic
 		 );
 	end component;
@@ -142,10 +142,10 @@ begin
 	-- Display
 	GK: genClk port map(M100clk, M25clk);
 	SCR: Screen port map(M25clk, req_x, req_y, res_r, res_g, res_b, hs, vs, r, g, b);
-	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk, M100clk);
+	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk);
 	
 	-- Serial Port
-	GIR: Game_Info_Receiver port map(sys_clk => M25clk,
+	GIR: Game_Info_Receiver port map(sys_clk => not M25clk,
 									 clk => M11clk,
 									 player_data => Serial_player_in,
 									 bullet_data => Serial_bullet_in,
