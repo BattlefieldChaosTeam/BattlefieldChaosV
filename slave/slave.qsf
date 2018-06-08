@@ -143,7 +143,6 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=66" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC_LOWORD=35294" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_CRC_HIWORD=56836" -section_id auto_signaltap_0
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name VHDL_FILE ../statics/bulletR.vhd
 set_global_assignment -name VHDL_FILE ../statics/bulletL.vhd
 set_global_assignment -name QIP_FILE ../statics/bulletR.qip
@@ -176,3 +175,4 @@ set_global_assignment -name VHDL_FILE ../control/emitBullets.vhd
 set_global_assignment -name VHDL_FILE ../control/BulletMove.vhd
 set_global_assignment -name VHDL_FILE ../control/bullethit.vhd
 set_global_assignment -name SIGNALTAP_FILE stp1.stp
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

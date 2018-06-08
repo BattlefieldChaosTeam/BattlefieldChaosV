@@ -86,32 +86,16 @@ architecture bhv of Renderer is
     end component;
 
     signal heart_pixel: Pixel;
-    
-    type BulletPixels is array(0 to 20) of Pixel;
-    signal my_bullet_pixels: BulletPixels;
 
     component BulletPic is
         port(
-            bullet_x, pix_x: in integer range 0 to 2559;
-            bullet_y, pix_y: in integer range 0 to 1919;
-            bullet_dir : in std_logic; --0表示向左，1表示向右
+            pix_x: in integer range 0 to 2559;
+            pix_y: in integer range 0 to 1919; -- pix_x, pix_y为请求的像素
+            bullet_in : in BULLETS;
             pixel_out: out Pixel; -- 输出像素
             clk : in std_logic --25M的时钟
         );
     end component;
-
-    function check_for_bullet(
-        my_bullet_pixels: BulletPixels
-    )
-    return Pixel is
-    begin
-        chek_loop: for i in 0 to bullet_array'length - 1 loop
-            if my_bullet_pixels(i).valid then
-                return my_bullet_pixels(i);
-            end if;
-        end loop;
-        return my_bullet_pixels(0);
-    end function;
 
     begin
         center_x <= HALF_SCREEN_WID when player_array(which_player).x < HALF_SCREEN_WID else
@@ -194,22 +178,13 @@ architecture bhv of Renderer is
             clk => clk_25M
         );
 
-        g_my_bullet_pics: for i in 0 to 20 generate
-            my_bullet_pic: BulletPic port map(
-                bullet_x => to_integer(unsigned(bullet_array(i).x)),
-                bullet_y => to_integer(unsigned(bullet_array(i).y)),
-                pix_x => to_integer(unsigned(game_x)),
-                pix_y => to_integer(unsigned(game_y)),
-                bullet_dir => bullet_array(i).dir,
-                pixel_out => my_bullet_pixels(i),
-                clk => clk_25M
-            );
-        end generate;
-
-        process(game_x, game_y, bullet_array)
-        begin
-            bullet_pixel <= check_for_bullet(my_bullet_pixels);
-        end process;
+        my_bullet_pic: BulletPic port map(
+            pix_x => to_integer(unsigned(game_x)),
+            pix_y => to_integer(unsigned(game_y)),
+            bullet_in => bullet_array,
+            pixel_out => bullet_pixel,
+            clk => clk_25M
+        );
 
         process(game_x, game_y, barrier_array)
         begin
