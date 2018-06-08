@@ -11,12 +11,14 @@ entity logic_controller is
 		rst, clk: in std_logic;
 		player_one_input: in std_logic_vector(4 downto 0);
 		player_two_input: in std_logic_vector(4 downto 0);
-		enter: in std_logic;
+		enter_one: in std_logic;
+		enter_two: in std_logic; -- APPENDING
 		bullets_output: out BULLETS;
 		players_output: out PLAYERS;
 		barriers_output:out BARRIERS;
 		curs:out std_logic_vector(2 downto 0);
-		xout : out std_logic_vector(15 downto 0)
+		xout : out std_logic_vector(15 downto 0);
+		gamestate_output: out GAMESTATE -- APPENDING
 	);
 end entity logic_controller;
 
@@ -101,7 +103,7 @@ architecture logic_controller_bhv of logic_controller is
 	signal barriers, barriers_init : BARRIERS;
 	signal players, players_init, players_tmp: PLAYERS;
 
-	type STATE is (start, init_state, p1work);
+	type STATE is (start, p1wait, p2wait, p1init, p1work, p1win, p1lose);
 --After update_coor reached, the information can be sent to vga controller
 --caution : the end of game
 
@@ -181,7 +183,9 @@ begin
 	begin
 		if(rst = '0') then -- to be added
 			
-			cur_state <= init_state;
+			cur_state <= start;
+			gamestate_output.s <= "000"; -- Initial : Wait for A(master) & B(slave)
+			
 			rising_count := 0;
 			
 			init_enable <= '1';
@@ -195,16 +199,45 @@ begin
 		elsif(rising_edge(clk)) then
 		
 			case cur_state is
+			
+				when start =>
+					
+					if(enter_one = '1') then 
+						cur_state <= p2wait;
+						gamestate_output.s <= "010"; -- Initial : Wait for B
+					elsif(enter_two = '1') then
+						cur_state <= p1wait;
+						gamestate_output.s <= "001"; -- Initial : Wait for A
+					end if;
 				
-				when init_state =>
+				when p1wait =>
+					
+					if(enter_two = '1') then
+						cur_state <= p1init;
+						gamestate_output.s <= "011"; -- About To Start : Few Seconds before start
+					end if;
+				
+				when p2wait =>
+					
+					if(enter_one = '1') then
+						cur_state <= p1init;
+						gamestate_output.s <= "011"; -- About To Start : Few Seconds before start
+					end if;
+				
+				when p1init =>
 					
 					rising_count := rising_count + 1;
-					if(rising_count = 125000) then
+					
+					if(rising_count = 2000000000) then -- 2sec to start
 						rising_count := 0;
+						
 						cur_state <= p1work;
+						gamestate_output.s <= "100"; -- Gamemode
+						
 					end if;
 					
 					case rising_count is
+					
 						when 1=> 
 							init_enable <= '0';
 							p1move_enable <= '1';  p2move_enable <= '1';
@@ -220,23 +253,47 @@ begin
 							players <= players_init;
 						
 						when 70000=>
-							barriers(2).ax <= "0000000100000000";
-							barriers(2).ay <= "0000001000000000";
-							barriers(2).bx <= "0000010000000000";
-							barriers(2).by <= "0000001000001000";
+							barriers(0).ax <= "0000000111110100";
+							barriers(0).bx <= "0000001001101100";
+							barriers(0).ay <= "0000000111110100";
+							barriers(0).by <= "0000000111111110";
+							barriers(1).ax <= "0000001101011100";
+							barriers(1).bx <= "0000001111010100";
+							barriers(1).ay <= "0000000111110100";
+							barriers(1).by <= "0000000111111110";
+							barriers(2).ax <= "0000001010101000";
+							barriers(2).bx <= "0000001100100000";
+							barriers(2).ay <= "0000001001001110";
+							barriers(2).by <= "0000001001011000";
+							barriers(3).ax <= "0000001100100000";
+							barriers(3).bx <= "0000001101011100";
+							barriers(3).ay <= "0000001010101000";
+							barriers(3).by <= "0000001010110010";
+							barriers(4).ax <= "0000010000010000";
+							barriers(4).bx <= "0000010010001000";
+							barriers(4).ay <= "0000001010101000";
+							barriers(4).by <= "0000001010110010";
+							barriers(5).ax <= "0000001000110000";
+							barriers(5).bx <= "0000001011100100";
+							barriers(5).ay <= "0000001100000010";
+							barriers(5).by <= "0000001100001100";
+							barriers(6).ax <= "0000001110011000";
+							barriers(6).bx <= "0000001111010100";
+							barriers(6).ay <= "0000001100000010";
+							barriers(6).by <= "0000001100001100";
+							barriers(7).ax <= "0000001100000010";
+							barriers(7).bx <= "0000001101111010";
+							barriers(7).ay <= "0000001101011100";
+							barriers(7).by <= "0000001101100110";
+							barriers(8).ax <= "0000010001001100";
+							barriers(8).bx <= "0000010011000100";
+							barriers(8).ay <= "0000001101011100";
+							barriers(8).by <= "0000001101100110";
+							barriers(9).ax <= "0000001110011000";
+							barriers(9).bx <= "0000010000010000";
+							barriers(9).ay <= "0000001110110110";
+							barriers(9).by <= "0000001111000000";
 
-						when 80000=>
-							barriers(3).ax <= "0000000010000000";
-							barriers(3).bx <= "0000000111110100";
-							barriers(3).ay <= "0000000110010110";
-							barriers(3).by <= "0000000110011110";
-						
-						when 90000=>
-							barriers(4).ax <= "0000001000001000";
-							barriers(4).bx <= "0000001001011000";
-							barriers(4).ay <= "0000000101101110";
-							barriers(4).by <= "0000000101110110";
-						
 						when 95000=>
 						
 						when others=>
@@ -248,7 +305,9 @@ begin
 					rising_count := rising_count + 1;
 					if(rising_count = 125000) then
 						rising_count := 0;
+						
 						cur_state <= p1work;
+						gamestate_output.s <= "100"; -- Gamemode
 					end if;
 					
 					case rising_count is
@@ -382,7 +441,15 @@ begin
 							players(1).x <= pdx2;
 							players(0).y <= pdy1;
 							players(1).y <= pdy2;
-						
+							
+							if(players(0).life = "0000") then
+								cur_state <= p1lose;
+								gamestate_output.s <= "110"; -- Final : This play lose; Opponent Win
+							elsif(players(1).life = "0001") then
+								cur_state <= p1win;
+								gamestate_output.s <= "101"; -- Final : This play win; Opponent lose
+							end if;
+								
 						when 80000=> -- Ending Module
 						
 							init_enable <= '1';
@@ -398,9 +465,20 @@ begin
 					
 					end case;
 				
+				when p1lose=>
+					
+					cur_state <= p1lose;
+					gamestate_output.s <= "110"; -- Final : This play lose; Opponent Win
+				
+				when p1win=>
+					
+					cur_state <= p1win;
+					gamestate_output.s <= "101"; -- Final : This play win; Opponent lose
+				
 				when others=>
 					rising_count := 0;
 					cur_state <= p1work;
+					gamestate_output.s <= "100"; -- Gamemode
 					
 			end case;
 			

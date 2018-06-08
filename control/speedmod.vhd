@@ -19,13 +19,13 @@ end entity;
 architecture speedmod_beh of speedmod is
 	
 	constant jsp: std_logic_vector(15 downto 0) := "0000000000010010";
-	constant dsp: std_logic_vector(15 downto 0) := "0000000000000010";
+	constant dsp: std_logic_vector(15 downto 0) := "0000000000000101";
 	constant jac: std_logic_vector(15 downto 0) := "0000000000000001";
 	constant dac: std_logic_vector(15 downto 0) := "0000000000000001";
-	constant mlst: std_logic_vector(15 downto 0) := "0000000000100000";
+	constant mlst: std_logic_vector(15 downto 0) := "0000000001000000";
 	constant glst: std_logic_vector(15 downto 0) := "0000000000000011";
 	constant tlst: std_logic_vector(15 downto 0) := "0000000000000001";
-	constant mxspd: std_logic_vector(15 downto 0) := "0000000000000100";
+	constant mxspd: std_logic_vector(15 downto 0) := "0000000000000110";
 	
 	constant conspd : std_logic_vector(15 downto 0) := "0000000000000100";
 	constant conacc : std_logic_vector(15 downto 0) := "0000000000100000";
@@ -120,6 +120,8 @@ begin
 					
 						if(p.ys.dir = '0') then -- up
 							
+							ys.hgd <= p.ys.hgd;
+							
 							if(p.ys.lst > 0) then -- keep speed
 								
 								ys.spd <= p.ys.spd; ys.dir <= '0'; ys.acc <= jac; 
@@ -136,20 +138,25 @@ begin
 								end if;
 								
 								ys.dir <= '0'; ys.acc <= jac;
+								ys.lst <= zerospd;
 							
 							else -- top at sky
 								
-								ys.spd <= zerospd; ys.dir <= '1'; ys.acc <= dac; 
+								ys.spd <= zerospd; ys.dir <= '1'; ys.acc <= dac;  
 								
 							end if;
 								
 						else -- down
+						
+							if(p.ys.hgd = '1' and key_signal(0) = '1') then -- up
 							
-							if(d = '1') then
+									ys.spd <= jsp; ys.dir <= '0'; ys.acc <= jac; ys.lst <= mlst; ys.hgd <= '0';
+									
+							elsif (d = '1') then
+							
+								ys.hgd <= '1';
 								
-								if(key_signal(0) = '1') then -- up
-									ys.spd <= jsp; ys.dir <= '0'; ys.acc <= jac; ys.lst <= mlst;
-								elsif(key_signal(1) = '1') then -- down
+								if(key_signal(1) = '1') then -- down
 									ys.spd <= dsp; ys.dir <= '1'; ys.acc <= dac; 
 								else -- hold
 									ys.spd <= zerospd; ys.dir <= '1'; ys.acc <= dac;
@@ -167,7 +174,8 @@ begin
 										ys.lst <= glst;
 									end if;
 								end if;
-								ys.dir <= '1'; ys.acc <= dac;
+								
+								ys.dir <= '1'; ys.acc <= dac; ys.hgd <= p.ys.hgd;
 							
 							end if;
 							

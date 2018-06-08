@@ -15,6 +15,7 @@ package types is
 		dir : std_logic;
 		lst : std_logic_vector(15 downto 0);
 		lst2: std_logic_vector(15 downto 0);
+		hgd : std_logic;
 	end record SPDSET;
 	
 	type PLAYER is record 
@@ -43,5 +44,16 @@ package types is
 		b: std_logic_vector(2 downto 0);
 		valid: boolean; -- 指示该像素是否有效
 	end record;
+	
+	type GAMESTATE is record
+		s: std_logic_vector(2 downto 0);
+	end record; 
+		-- "000" Initial : Wait for A(master) & B(slave)
+		-- "001" Initial : Wait for A
+		-- "010" Initial : Wait for B
+		-- "011" About To Start : Few Seconds before start
+		-- "100" Gamemode
+		-- "101" Final : This play win; Opponent lose
+		-- "110" Final : This play lose; Opponent Win
 	
 end types;

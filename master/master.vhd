@@ -73,12 +73,14 @@ architecture bhv of master is
 			rst, clk: in std_logic;
 			player_one_input: in std_logic_vector(4 downto 0);
 			player_two_input: in std_logic_vector(4 downto 0);
-			enter: in std_logic;
+			enter_one: in std_logic;
+			enter_two: in std_logic;
 			bullets_output: out BULLETS;
 			players_output: out PLAYERS;
 			barriers_output:out BARRIERS;
 			curs:out std_logic_vector(2 downto 0);
-			xout : out std_logic_vector(15 downto 0)
+			xout : out std_logic_vector(15 downto 0);
+			gamestate_output: out GAMESTATE
 		);
 	end component logic_controller;
 	
@@ -149,6 +151,8 @@ architecture bhv of master is
 
 	signal my_head_clk: std_logic;
 	signal my_head_cnt: integer range 0 to 5000 := 0;
+
+	signal dumb_game_state: GAMESTATE;
 	
 begin
 
@@ -173,7 +177,18 @@ begin
 	SCLK2:slowclk port map(M100clk, p2_keyboard, p2_slow);
 	
 	-- Logic Control Module
-	LC: logic_controller port map(reset, M100clk, p1_slow, p2_slow, '1', bullets_out, players_out, barriers_out, curstate, xout);
+	LC: logic_controller port map(rst => reset,
+								  clk => M100clk,
+								  player_one_input => p1_slow,
+								  player_two_input => p2_slow,
+								  enter_one => key_enter,
+								  enter_two => p2_keyboard(0),
+								  bullets_output => bullets_out,
+								  players_output => players_out,
+								  barriers_output => barriers_out,
+								  curs => curstate,
+								  xout => xout,
+								  gamestate_output => dumb_game_state);
 	
 	-- Display Module
 	GK: genClk port map(M100clk, M25clk);

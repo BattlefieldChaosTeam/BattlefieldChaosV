@@ -37,12 +37,6 @@ begin
 			
 		elsif (rising_edge(clk)) then -- working : need 9 clks to stable
 			
-			if(cnt = 11) then
-				cnt := 10; -- begin
-			else
-				cnt := cnt + 1; -- next pending
-			end if;
-			
 			ax := wmap(cnt).ax;
 			ay := wmap(cnt).ay;
 			bx := wmap(cnt).bx;
@@ -53,6 +47,10 @@ begin
 			--if(ay <= y and y <= by and (not x + wx <= ax) and (not bx <= x)) then l <= '1'; end if;
 			--if(ay <= y + wy and y + wy <= by and (not x + wx <= ax) and (not bx <= x)) then r <= '1'; end if;
 			-- pending t
+			
+			if(cnt < 10) then
+				cnt := cnt + 1; -- next pending
+			end if;
 			
 		end if;
 	end process;

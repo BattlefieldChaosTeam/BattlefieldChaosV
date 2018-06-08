@@ -48,7 +48,7 @@ begin
 						bx := bullet_in(i).x;
 						by := bullet_in(i).y;
 						
-						if((y <= by) and (by <= y + wy) and (x <= bx) and (bx <= x + wx)) then
+						if((bullet_in(i).in_screen='1') and (y <= by) and (by <= y + wy) and (x <= bx) and (bx <= x + wx)) then
 							is_hit <= '1';
 							dir_hit <= not bullet_in(i).dir;
 							bullet_out(i).in_screen <= '0';
