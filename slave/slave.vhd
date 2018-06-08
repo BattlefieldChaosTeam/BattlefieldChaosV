@@ -18,9 +18,9 @@ entity slave is
 		  ply1_out: out std_logic_vector(6 downto 0);
 		  ply2_out : out std_logic_vector(6 downto 0);
 		  M11clk: in std_logic;
-		  Serial_player_in, Serial_bullet_in, Serial_headclk: in std_logic;
+		  Serial_player_in, Serial_bullet_in, Serial_game_state_in, Serial_headclk: in std_logic;
 		  Serial_keyboard_out: out std_logic;
-		  head_clk: in std_logic
+		  game_state_led: out std_logic_vector(2 downto 0)
 		  );
 	
 	function encode_number(x : in std_logic_vector) return std_logic_vector is
@@ -97,8 +97,10 @@ architecture bhv of slave is
 			  clk: in std_logic; -- 此时钟为杜邦线传来的时钟
 			  player_data: in std_logic;
 			  bullet_data: in std_logic;
+			game_state_data: in std_logic;
 			  rec_players: out PLAYERS;
 			  rec_bullets: out BULLETS;
+			rec_game_state: out GAMESTATE;
 			  head_clk: in std_logic
 		 );
 	end component;
@@ -126,7 +128,11 @@ architecture bhv of slave is
 	
 	signal M25clk : std_logic;
 	
+	signal my_game_state: GAMESTATE;
+	
 begin
+	-- test
+	game_state_led <= my_game_state.s;
 	-- Input Module
 	IP: Input_Module port map(M100clk, ps2_data, ps2_clk, p2_keyboard, nouse_keyboard, key_enter);
 	
@@ -136,10 +142,19 @@ begin
 	-- Display
 	GK: genClk port map(M100clk, M25clk);
 	SCR: Screen port map(M25clk, req_x, req_y, res_r, res_g, res_b, hs, vs, r, g, b);
-	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk);
+	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk, M100clk);
 	
 	-- Serial Port
-	GIR: Game_Info_Receiver port map(not M25clk, M11clk, Serial_player_in, Serial_bullet_in, players_out, bullets_out, Serial_headclk);
+	GIR: Game_Info_Receiver port map(sys_clk => M25clk,
+									 clk => M11clk,
+									 player_data => Serial_player_in,
+									 bullet_data => Serial_bullet_in,
+									 game_state_data => Serial_game_state_in,
+									 rec_players => players_out,
+									 rec_bullets => bullets_out,
+									 rec_game_state => my_game_state,
+									 head_clk =>Serial_headclk
+									 );
 	KS: Keyboard_Sender port map(M100clk, M11clk, p2_keyboard, Serial_keyboard_out, Serial_headclk);
 	
 end architecture;

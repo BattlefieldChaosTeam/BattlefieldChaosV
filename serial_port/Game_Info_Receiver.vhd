@@ -9,8 +9,10 @@ entity Game_Info_Receiver is
         clk: in std_logic; -- 此时钟为杜邦线传来的时钟
         player_data: in std_logic;
         bullet_data: in std_logic;
+        game_state_data: in std_logic;
         rec_players: out PLAYERS;
         rec_bullets: out BULLETS;
+        rec_game_state: out GAMESTATE;
         head_clk: in std_logic
     );
 end entity;
@@ -22,12 +24,15 @@ architecture bhv of Game_Info_Receiver is
 
     signal player_cache: PLAYERS;
     signal bullet_cache: BULLETS;
+    signal game_state_cache: GAMESTATE;
     signal cur_bullet_frame: integer range 0 to 21:= 0; -- 当前正在发送的子弹编号为cur_bullet_frame - 1，0开始帧，21结束帧
     signal cur_bullet_bit: integer range 0 to 36 := 0; -- 当前正在发送的子弹数据的比特，0开始位，35校验位，36结束位
     signal cur_player_frame: integer range 0 to 3 := 0;
     signal cur_player_bit: integer range 0 to 37 := 0; -- 玩家信息还要多两位，用于生命值，0开始位，36校验位，37结束位
+    signal cur_state_bit: integer range 0 to 5 := 0; -- 游戏状态共三位，加上开始位、校验位和结束位
     signal bullet_odd: std_logic;
     signal player_odd: std_logic;
+    signal state_odd: std_logic;
     signal bullet_extra_frame: std_logic_vector(33 downto 0); -- 存储开始帧和结束帧，同步用
     signal player_extra_frame: std_logic_vector(34 downto 0);
 
@@ -62,8 +67,8 @@ architecture bhv of Game_Info_Receiver is
     end function;
 
     begin
-        clk_sample1 <= clk when rising_edge(sys_clk);
-        clk_sample2 <= clk_sample1 when rising_edge(sys_clk);
+        clk_sample1 <= clk when falling_edge(sys_clk);
+        clk_sample2 <= clk_sample1 when falling_edge(sys_clk);
         read_bit_ok <= clk_sample1 and (not clk_sample2);
 
         process(cur_bullet_frame, bullet_cache) -- 生成子弹信息校验位
@@ -84,9 +89,14 @@ architecture bhv of Game_Info_Receiver is
             end if;
         end process;
 
+        process(game_state_cache) -- 生成游戏状态校验位
+        begin
+            state_odd <= xor_vector(game_state_cache.s);
+        end process;
+
         process(sys_clk) -- 子弹信息接收
         begin
-            if rising_edge(sys_clk) then
+            if falling_edge(sys_clk) then
                 if read_bit_ok = '1' then
                     if head_clk = '0' then
                         cur_bullet_frame <= 0;
@@ -191,7 +201,7 @@ architecture bhv of Game_Info_Receiver is
 
         process(sys_clk) -- 玩家信息接收
         begin
-            if rising_edge(sys_clk) then
+            if falling_edge(sys_clk) then
                 if read_bit_ok = '1' then
                     if head_clk = '0' then
                         cur_player_frame <= 0;
@@ -285,6 +295,41 @@ architecture bhv of Game_Info_Receiver is
                             else
                                 cur_player_bit <= 0;
                                 cur_player_frame <= 0;
+                            end if;
+                        end if;
+                    end if;
+                end if;
+            end if;
+        end process;
+
+        process(sys_clk)
+        begin
+            if falling_edge(sys_clk) then
+                if read_bit_ok = '1' then
+                    if head_clk = '0' then
+                        cur_state_bit <= 0;
+                    else
+                        if cur_state_bit = 0 then
+                            if game_state_data = '0' then
+                                cur_state_bit <= cur_state_bit + 1;
+                            else
+                                cur_state_bit <= 0;
+                            end if;
+                        elsif cur_state_bit >=1 and cur_state_bit <= 3 then
+                            game_state_cache.s(cur_state_bit - 1) <= game_state_data;
+                            cur_state_bit <= cur_state_bit + 1;
+                        elsif cur_state_bit = 4 then
+                            if state_odd = game_state_data then
+                                cur_state_bit <= cur_state_bit + 1;
+                            else
+                                cur_state_bit <= 0;
+                            end if;
+                        else
+                            if game_state_data = '1' then
+                                rec_game_state <= game_state_cache;
+                                cur_state_bit <= 0;
+                            else
+                                cur_state_bit <= 0;
                             end if;
                         end if;
                     end if;

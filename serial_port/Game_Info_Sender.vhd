@@ -10,8 +10,10 @@ entity Game_Info_Sender is
         clk: in std_logic; -- 11M时钟
         player_array: in PLAYERS;
         bullet_array: in BULLETS;
+        game_state: in GAMESTATE;
         bullet_data: out std_logic;
         player_data: out std_logic;
+        game_state_data: out std_logic;
         head_clk: in std_logic -- 这个信号为0时代表帧头
     );
 end entity;
@@ -21,10 +23,13 @@ architecture bhv of Game_Info_Sender is
     signal cur_bullet_bit: integer range 0 to 36 := 0; -- 当前正在发送的子弹数据的比特，0开始位，35校验位，36结束位
     signal cur_player: integer range 0 to 3 := 0;
     signal cur_player_bit: integer range 0 to 37 := 0; -- 玩家信息还要多两位，用于生命值
+    signal cur_state_bit: integer range 0 to 5 := 0; -- 游戏状态共3位，加上开始、校验和结束位
     signal bullet_cache: BULLETS;
     signal player_cache: PLAYERS;
+    signal game_state_cache: GAMESTATE;
     signal bullet_odd: std_logic; -- 子弹校验位
     signal player_odd: std_logic; -- 玩家校验位
+    signal game_state_odd: std_logic; -- 游戏状态校验位
 
     function xor_vector(vector: std_logic_vector)
     return std_logic is
@@ -53,6 +58,11 @@ architecture bhv of Game_Info_Sender is
             else
                 player_odd <= '0';
             end if;
+        end process;
+
+        process(game_state_cache)
+        begin
+            game_state_odd <= xor_vector(game_state_cache.s);
         end process;
 
         process(clk, bullet_array, bullet_cache, head_clk) -- 子弹信息发送
@@ -165,4 +175,26 @@ architecture bhv of Game_Info_Sender is
                 end if;
             end if;
         end process;
+
+        process(clk, head_clk) -- 游戏信息发送进程
+        begin
+            if head_clk = '0' then
+                cur_state_bit <= 0;
+            elsif rising_edge(clk) then
+                if cur_state_bit = 0 then
+                    game_state_data <= '0';
+                    game_state_cache <= game_state;
+                    cur_state_bit <= cur_state_bit + 1;
+                elsif cur_state_bit >= 1 and cur_state_bit <= 3 then
+                    game_state_data <= game_state_cache.s(cur_state_bit - 1);
+                    cur_state_bit <= cur_state_bit + 1;
+                elsif cur_state_bit = 4 then
+                    game_state_data <= game_state_odd;
+                    cur_state_bit <= cur_state_bit + 1;
+                else
+                    game_state_data <= '1';
+                end if;
+            end if;
+        end process;
+
     end architecture;

@@ -21,7 +21,7 @@ entity master is
 		  M11clk: in std_logic; -- Serial Port Clk
 		  M11clkout: out std_logic; -- Serial Port Clk out
 		  Serialkeyboard_in: in std_logic; -- Serial Port Keyboard Input
-		  Serialinfo_bullet, Serialinfo_player, Serialinfo_headclk: out std_logic
+		  Serialinfo_bullet, Serialinfo_player, Serialinfo_game_state, Serialinfo_headclk: out std_logic
 		  );
 	
 	function encode_number(x : in std_logic_vector) return std_logic_vector is
@@ -124,8 +124,10 @@ architecture bhv of master is
 			  clk: in std_logic; -- 11M时钟
 			  player_array: in PLAYERS;
 			  bullet_array: in BULLETS;
+			  game_state: in GAMESTATE;
 			  bullet_data: out std_logic;
 			  player_data: out std_logic;
+			  game_state_data: out std_logic;
 			  head_clk: in std_logic
 		 );
 	end component;
@@ -152,7 +154,7 @@ architecture bhv of master is
 	signal my_head_clk: std_logic;
 	signal my_head_cnt: integer range 0 to 5000 := 0;
 
-	signal dumb_game_state: GAMESTATE;
+	signal my_game_state: GAMESTATE;
 	
 begin
 
@@ -188,7 +190,7 @@ begin
 								  barriers_output => barriers_out,
 								  curs => curstate,
 								  xout => xout,
-								  gamestate_output => dumb_game_state);
+								  gamestate_output => my_game_state);
 	
 	-- Display Module
 	GK: genClk port map(M100clk, M25clk);
@@ -204,8 +206,10 @@ begin
 				clk => Serialinfo_Clk, 
 				player_array => players_out,
 				bullet_array => bullets_out,
+				game_state => my_game_state,
 				bullet_data => Serialinfo_bullet, 
 				player_data => Serialinfo_player,
+				game_state_data => Serialinfo_game_state,
 				head_clk => my_head_clk);
 	
 	cur_out <= encode_number("0000");
