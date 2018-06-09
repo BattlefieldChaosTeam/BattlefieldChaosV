@@ -44,16 +44,17 @@ end entity;
 architecture bhv of slave is
 
 	component Renderer is
-		 port(
-			  req_x: in integer range 0 to 639; -- VGA请求像素的坐标
-			  req_y: in integer range 0 to 479;
-			  bullet_array: in BULLETS;
-			  player_array: in PLAYERS;
-			  barrier_array: in BARRIERS;
-			  which_player: in integer range 0 to 1; -- 指定玩家的主视角
-			  res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 返回的rgb值
-			  clk_25M: in std_logic
-		 );
+		port(
+			req_x: in integer range 0 to 639; -- VGA请求像素的坐标
+			req_y: in integer range 0 to 479;
+			bullet_array: in BULLETS;
+			player_array: in PLAYERS;
+			barrier_array: in BARRIERS;
+			game_state: in GAMESTATE;
+			which_player: in integer range 0 to 1; -- 指定玩家的主视角
+			res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 返回的rgb值
+			clk_25M: in std_logic -- 25M时钟
+	   );
 	end component Renderer;
 
 	component Screen is
@@ -142,7 +143,17 @@ begin
 	-- Display
 	GK: genClk port map(M100clk, M25clk);
 	SCR: Screen port map(M25clk, req_x, req_y, res_r, res_g, res_b, hs, vs, r, g, b);
-	RD: Renderer port map(req_x, req_y, bullets_out, players_out, barriers_out, 1, res_r, res_g, res_b, M25clk);
+	RD: Renderer port map(req_x => req_x,
+						  req_y => req_y,
+						  bullet_array => bullets_out,
+						  player_array => players_out,
+						  barrier_array => barriers_out,
+						  game_state => my_game_state,
+						  which_player => 1,
+						  res_r => res_r,
+						  res_g => res_g,
+						  res_b => res_b,
+						  clk_25M => M25clk);
 	
 	-- Serial Port
 	GIR: Game_Info_Receiver port map(sys_clk => not M25clk,

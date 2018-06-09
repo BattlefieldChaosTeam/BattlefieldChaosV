@@ -12,6 +12,7 @@ entity Renderer is
         bullet_array: in BULLETS;
         player_array: in PLAYERS;
         barrier_array: in BARRIERS;
+        game_state: in GAMESTATE;
         which_player: in integer range 0 to 1; -- 指定玩家的主视角
         res_r, res_g, res_b: out std_logic_vector(2 downto 0); -- 返回的rgb值
         clk_25M: in std_logic -- 25M时钟
@@ -33,6 +34,7 @@ architecture bhv of Renderer is
     signal player_two_pixel: Pixel;
     signal barrier_pixel: Pixel; -- 障碍物像素
     signal bullet_pixel: Pixel; -- 子弹像素
+    signal game_state_pixel: Pixel; -- 游戏开始、结束像素
 
     component LeftPlayerPic is
         port(
@@ -92,6 +94,16 @@ architecture bhv of Renderer is
         );
     end component;
 
+    component logoPic is
+        port(
+            pix_x, pix_y : in integer range 0 to 1000;
+            state: in std_logic_vector(2 downto 0);
+            ply_num : in integer range 0 to 1; --玩家编号，0为A，1为B
+            pixel_out: out Pixel;
+            clk : in std_logic
+        );
+    end component;
+
     begin
         process(clk_25M, player_array)
         variable center_x, center_y: std_logic_vector(15 downto 0); -- 当前视野的中心坐标
@@ -122,7 +134,11 @@ architecture bhv of Renderer is
         process(clk_25M, heart_pixel, player_pixel, bullet_pixel, barrier_pixel)
         begin
             if rising_edge(clk_25M) then
-                if heart_pixel.valid then
+                if game_state_pixel.valid then
+                    res_r <= game_state_pixel.r;
+                    res_g <= game_state_pixel.g;
+                    res_b <= game_state_pixel.b;
+                elsif heart_pixel.valid then
                     res_r <= heart_pixel.r;
                     res_g <= heart_pixel.g;
                     res_b <= heart_pixel.b;
@@ -230,5 +246,14 @@ architecture bhv of Renderer is
             barrier_array => barrier_array,
             pixel_out => barrier_pixel,
             clk => clk_25M
+        );
+
+        my_logo_pic: logoPic port map(
+            pix_x => req_x,
+            pix_y => req_y,
+            state => game_state.s,
+            ply_num => which_player,
+            clk => clk_25M,
+            pixel_out => game_state_pixel
         );
     end architecture;

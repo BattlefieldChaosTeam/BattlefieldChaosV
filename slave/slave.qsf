@@ -47,7 +47,7 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
 set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_location_assignment PIN_AF9 -to cur_out[6]
@@ -99,6 +99,10 @@ set_location_assignment PIN_D15 -to Serial_game_state_in
 set_location_assignment PIN_AF21 -to game_state_led[2]
 set_location_assignment PIN_AD21 -to game_state_led[1]
 set_location_assignment PIN_AF22 -to game_state_led[0]
+set_global_assignment -name VHDL_FILE ../statics/logo.vhd
+set_global_assignment -name QIP_FILE ../statics/logo.qip
+set_global_assignment -name MIF_FILE ../statics/all.mif
+set_global_assignment -name VHDL_FILE ../display/logoPic.vhd
 set_global_assignment -name VHDL_FILE ../statics/wall.vhd
 set_global_assignment -name VHDL_FILE ../display/wallPic.vhd
 set_global_assignment -name VHDL_FILE ../statics/bulletR.vhd

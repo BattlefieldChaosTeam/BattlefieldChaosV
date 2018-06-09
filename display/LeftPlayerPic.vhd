@@ -56,28 +56,14 @@ begin
 	addrInt2_2 <= (pix_y - player_y) * conv_integer(unsigned(PLY_X)) + (pix_x - player_x);
 	addr2_2 <= conv_std_logic_vector(addrInt2_2, 10);
 	
-	process(player_num, rgba1_2, rgba2_2, addrInt1_2, addrInt2_2)
-	begin
-		if pix_x - player_x >= conv_integer(unsigned(PLY_X)) or pix_x < player_x or pix_y - player_y >= conv_integer(unsigned(PLY_Y)) or pix_y < player_y then
-			pixel_out.valid <= false;
-		elsif(player_num = '0') then --0号玩家
-			pixel_out.r(2) <= rgba1_2(9); pixel_out.r(1) <= rgba1_2(8); pixel_out.r(0) <= rgba1_2(7);
-			pixel_out.g(2) <= rgba1_2(6); pixel_out.g(1) <= rgba1_2(5); pixel_out.g(0) <= rgba1_2(4);
-			pixel_out.b(2) <= rgba1_2(3); pixel_out.b(1) <= rgba1_2(2); pixel_out.b(0) <= rgba1_2(1);
-			if rgba1_2(0) = '0' then
-				pixel_out.valid <= false;
-			else
-				pixel_out.valid <= true;
-			end if;
-		else
-			pixel_out.r(2) <= rgba2_2(9); pixel_out.r(1) <= rgba2_2(8); pixel_out.r(0) <= rgba2_2(7);
-			pixel_out.g(2) <= rgba2_2(6); pixel_out.g(1) <= rgba2_2(5); pixel_out.g(0) <= rgba2_2(4);
-			pixel_out.b(2) <= rgba2_2(3); pixel_out.b(1) <= rgba2_2(2); pixel_out.b(0) <= rgba2_2(1);
-			if rgba2_2(0) = '0' then
-				pixel_out.valid <= false;
-			else
-				pixel_out.valid <= true;
-			end if;
-		end if;
-	end process;
+	pixel_out.valid <= false when pix_x - player_x >= conv_integer(unsigned(PLY_X)) or pix_x < player_x or pix_y - player_y >= conv_integer(unsigned(PLY_Y)) or pix_y < player_y else
+					   false when player_num = '0' and rgba1_2(0) = '0' else
+					   false when player_num = '1' and rgba2_2(0) = '0' else
+					   true;
+	pixel_out.r <= rgba1_2(9 downto 7) when player_num = '0' else
+				   rgba2_2(9 downto 7);
+	pixel_out.g <= rgba1_2(6 downto 4) when player_num = '0' else
+				   rgba2_2(6 downto 4);
+    pixel_out.b <= rgba1_2(3 downto 1) when player_num = '0' else
+		           rgba2_2(3 downto 1);
 end architecture bhv_readRom;

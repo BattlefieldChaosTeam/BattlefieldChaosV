@@ -97,6 +97,10 @@ set_global_assignment -name USE_SIGNALTAP_FILE output_files/stp1.stp
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_location_assignment PIN_D15 -to Serialinfo_game_state
+set_global_assignment -name QIP_FILE ../statics/logo.qip
+set_global_assignment -name MIF_FILE ../statics/all.mif
+set_global_assignment -name VHDL_FILE ../statics/logo.vhd
+set_global_assignment -name VHDL_FILE ../display/logoPic.vhd
 set_global_assignment -name MIF_FILE ../statics/wall11.mif
 set_global_assignment -name QIP_FILE ../statics/wall.qip
 set_global_assignment -name VHDL_FILE ../statics/wall.vhd
