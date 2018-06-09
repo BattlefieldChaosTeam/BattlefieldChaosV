@@ -175,14 +175,14 @@ begin
 
 	-- Input Module
 	IP: Input_Module port map(M100clk, ps2_data, ps2_clk, p1_keyboard, nouse_keyboard, key_enter);
-	SCLK: slowclk port map(M100clk, p1_keyboard, p1_slow);
-	SCLK2:slowclk port map(M100clk, p2_keyboard, p2_slow);
+	--SCLK: slowclk port map(M100clk, p1_keyboard, p1_slow);
+	--SCLK2:slowclk port map(M100clk, p2_keyboard, p2_slow);
 	
 	-- Logic Control Module
 	LC: logic_controller port map(rst => reset,
 								  clk => M100clk,
-								  player_one_input => p1_slow,
-								  player_two_input => p2_slow,
+								  player_one_input => p1_keyboard,
+								  player_two_input => p2_keyboard,
 								  enter_one => key_enter,
 								  enter_two => p2_keyboard(0),
 								  bullets_output => bullets_out,

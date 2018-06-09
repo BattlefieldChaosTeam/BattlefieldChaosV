@@ -34,20 +34,6 @@ architecture bhv of Renderer is
     signal barrier_pixel: Pixel; -- 障碍物像素
     signal bullet_pixel: Pixel; -- 子弹像素
 
-    function check_for_barrier(
-        x: std_logic_vector(15 downto 0);
-        y: std_logic_vector(15 downto 0)
-    )
-    return boolean is
-    begin
-        check_loop: for i in 0 to barrier_array'length - 1 loop
-            if x >= barrier_array(i).ax and x < barrier_array(i).bx and y >= barrier_array(i).ay and y < barrier_array(i).by then
-                return true;
-            end if;
-        end loop;
-        return false;
-    end function;
-
     component LeftPlayerPic is
         port(
             player_x, pix_x: in integer range 0 to 2559;
@@ -93,6 +79,16 @@ architecture bhv of Renderer is
             bullet_in : in BULLETS;
             pixel_out: out Pixel; -- 输出像素
             clk : in std_logic --25M的时钟
+        );
+    end component;
+
+    component wallPic is
+        port(
+            pix_x: in integer range 0 to 2559;
+            pix_y: in integer range 0 to 1919;
+            barrier_array: in BARRIERS;
+            pixel_out: out Pixel;
+            clk: in std_logic
         );
     end component;
 
@@ -144,8 +140,8 @@ architecture bhv of Renderer is
                     res_b <= barrier_pixel.b;
                 else
                     res_r <= "000";
-                    res_g <= "000";
-                    res_b <= "000";
+                    res_g <= "011";
+                    res_b <= "101";
                 end if;
             end if;
         end process;
@@ -190,12 +186,26 @@ architecture bhv of Renderer is
             clk => clk_25M
         );
 
-        player_one_pixel <= left_player_one_pix when player_array(0).xs.dir = '0' else
-                            right_player_one_pix;
-        player_two_pixel <= left_player_two_pix when player_array(1).xs.dir = '0' else
-                            right_player_two_pix;
-        player_pixel <= player_one_pixel when  player_one_pixel.valid else
-                        player_two_pixel;
+        process(clk_25M, player_array)
+        begin
+            if player_array(0).xs.dir = '0' then
+                player_one_pixel <= left_player_one_pix;
+            else
+                player_one_pixel <= right_player_one_pix;
+            end if;
+            
+            if player_array(1).xs.dir = '0' then
+                player_two_pixel <= left_player_two_pix;
+            else
+                player_two_pixel <= right_player_two_pix;
+            end if;
+
+            if player_one_pixel.valid then
+                player_pixel <= player_one_pixel;
+            else
+                player_pixel <= player_two_pixel;
+            end if;
+        end process;
 
         my_heart_pic: HeartPic port map(
             ply1_life => player_array(0).life,
@@ -214,14 +224,11 @@ architecture bhv of Renderer is
             clk => clk_25M
         );
 
-        process(clk_25M, game_x, game_y, barrier_array)
-        begin
-            if rising_edge(clk_25M) then
-                if check_for_barrier(game_x, game_y) then
-                    barrier_pixel <= (r => "111", g => "111", b => "111", valid => true);
-                else
-                    barrier_pixel <= (r => "000", g => "000", b => "000", valid => false);
-                end if;
-            end if;
-        end process;
+        my_wall_pic: wallPic port map(
+            pix_x => to_integer(unsigned(game_x)),
+            pix_y => to_integer(unsigned(game_y)),
+            barrier_array => barrier_array,
+            pixel_out => barrier_pixel,
+            clk => clk_25M
+        );
     end architecture;

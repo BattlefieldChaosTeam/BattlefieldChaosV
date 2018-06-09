@@ -228,7 +228,7 @@ begin
 					
 					rising_count := rising_count + 1;
 					
-					if(rising_count = 2000000000) then -- 2sec to start
+					if(rising_count = 200000000) then -- 2sec to start
 						rising_count := 0;
 						
 						cur_state <= p1work;
