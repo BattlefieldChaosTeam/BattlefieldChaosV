@@ -3,6 +3,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 use work.types.all;
 
 
@@ -39,15 +40,16 @@ architecture bhv_wallPic of wallPic is
 	signal rgba : std_logic_vector(9 downto 0);
 	signal addrInt: integer range 0 to 2000;
 	signal realx: integer range 0 to 20;
-	constant wallx : integer := 300; --娴嬭瘯浣跨敤
-	constant wally : integer := 300;
+	signal wallx : integer := 300; 
+	signal wally : integer := 300;
 	function check_barrier(
-		barrier_x, barrier_y
+		barrier_x, barrier_y: integer
 	)
-	return integer is --鎵惧埌绗﹀悎瑕佹眰鐨勯殰纰嶇墿
+	return integer is --返回对应的障碍物下标
 	begin
-		check_loop: for i in range 0 to 9 loop
-			if(conv_integer(myBarriers(i).ax) <= barrier_x and barrier_x < conv_integer(myBarriers(i).bx) and conv_integer(myBarriers(i).ay) <= barrier_y and barrier_y < conv_integer(myBarriers(i).by))
+		check_loop: for i in 0 to 9 loop
+			if conv_integer(myBarriers(i).ax) <= barrier_x and barrier_x < conv_integer(myBarriers(i).bx) 
+			and conv_integer(myBarriers(i).ay) <= barrier_y and barrier_y < conv_integer(myBarriers(i).by) then
 				return i;
 			end if;
 		end loop;
@@ -103,20 +105,20 @@ begin
 	u1 : wall port map(address => addr, clock => clk, q => rgba);
 	process(pix_x, pix_y)
 	begin
-		barreir_idx <= check_barrier(pix_x, pix_y);
+		barrier_idx <= check_barrier(pix_x, pix_y);
 
 		if(barrier_idx >= 11) then
 			pixel_out.valid <= false;
 		else
-			wallx <= myBarriers(barreir_idx).ax;
-			wally <= myBarriers(barrier_idx).ay;
+			wallx <= conv_integer(myBarriers(barrier_idx).ax);
+			wally <= conv_integer(myBarriers(barrier_idx).ay);
 			realx <= pix_x - wallx - ((pix_x - wallx) mod 20) * 20;
 			addrInt <= (pix_y - wally) * 20 + realx + 2;
 			addr <= conv_std_logic_vector(addrInt, 8);
 			pixel_out.r(2) <= rgba(9); pixel_out.r(1) <= rgba(8); pixel_out.r(0) <= rgba(7);
 			pixel_out.g(2) <= rgba(6); pixel_out.g(1) <= rgba(5); pixel_out.g(0) <= rgba(4);
 			pixel_out.b(2) <= rgba(3); pixel_out.b(1) <= rgba(2); pixel_out.b(0) <= rgba(1);
-			if rgbaR(0) = '0' then
+			if rgba(0) = '0' then
 					pixel_out.valid <= false;
 			else
 				pixel_out.valid <= true;
