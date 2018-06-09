@@ -14,7 +14,7 @@ entity Keyboard_Sender is
 end entity;
 
 architecture bhv of Keyboard_Sender is
-    type state_t is (start, D0, D1, D2, D3, D4, parity, finish); -- 分别对应开始位，数据位，奇偶校验位和结束位
+    type state_t is (start, D0, D1, D2, D3, D4, parity, finish, hang); -- 分别对应开始位，数据位，奇偶校验位和结束位
     signal state: state_t := start;
     signal sample_input: std_logic_vector(4 downto 0);
     signal odd: std_logic;
@@ -58,10 +58,13 @@ architecture bhv of Keyboard_Sender is
                             data <= odd;
                             state <= finish;
                         when finish =>
+                            data <= '0';
+                            state <= hang;
+                        when hang =>
                             data <= '1';
                         when others =>
                             data <= '1';
-                            state <= finish;
+                            state <= hang;
                     end case;
                 end if;
             end if;

@@ -24,44 +24,40 @@ architecture bhv of Keyboard_Receiver is
         process(clk)
         begin
             if rising_edge(clk) then
-                if head_clk = '0' then
-                    state <= start;
-                else
-                    case state is
-                        when start =>
-                            if data = '0' then
-                                state <= D0;
-                            end if;
-                        when D0 =>
-                            input_cache(0) <= data;
-                            state <= D1;
-                        when D1 =>
-                            input_cache(1) <= data;
-                            state <= D2;
-                        when D2 =>
-                            input_cache(2) <= data;
-                            state <= D3;
-                        when D3 =>
-                            input_cache(3) <= data;
-                            state <= D4;
-                        when D4 =>
-                            input_cache(4) <= data;
-                            state <= parity;
-                        when parity =>
-                            if odd = data then
-                                state <= finish;
-                            else
-                                state <= start;
-                            end if;
-                        when finish =>
-                            if data = '1' then
-                                player_input <= input_cache;
-                            end if;
+                case state is
+                    when start =>
+                        if data = '0' then
+                            state <= D0;
+                        end if;
+                    when D0 =>
+                        input_cache(0) <= data;
+                        state <= D1;
+                    when D1 =>
+                        input_cache(1) <= data;
+                        state <= D2;
+                    when D2 =>
+                        input_cache(2) <= data;
+                        state <= D3;
+                    when D3 =>
+                        input_cache(3) <= data;
+                        state <= D4;
+                    when D4 =>
+                        input_cache(4) <= data;
+                        state <= parity;
+                    when parity =>
+                        if odd = data then
                             state <= finish;
-                        when others =>
-                            state <= finish;
-                    end case;
-                end if;
+                        else
+                            state <= start;
+                        end if;
+                    when finish =>
+                        if data = '0' then
+                            player_input <= input_cache;
+                        end if;
+                        state <= start;
+                    when others =>
+                        state <= finish;
+                end case;
             end if;
         end process;
     end architecture;

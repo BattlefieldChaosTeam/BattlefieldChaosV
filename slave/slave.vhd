@@ -13,7 +13,7 @@ entity slave is
 		  ps2_data: in std_logic;
 		  ps2_clk: in std_logic;
 		  hs, vs: out std_logic; -- 行同步，场同步信号
-        r, g, b: out std_logic_vector(2 downto 0); -- 颜色输出
+		  r, g, b: out std_logic_vector(2 downto 0); -- 颜色输出
 		  cur_out: out std_logic_vector(6 downto 0);
 		  ply1_out: out std_logic_vector(6 downto 0);
 		  ply2_out : out std_logic_vector(6 downto 0);
@@ -153,7 +153,7 @@ begin
 									 rec_players => players_out,
 									 rec_bullets => bullets_out,
 									 rec_game_state => my_game_state,
-									 head_clk =>Serial_headclk
+									 head_clk => Serial_headclk
 									 );
 	KS: Keyboard_Sender port map(M100clk, M11clk, p2_keyboard, Serial_keyboard_out, Serial_headclk);
 	
