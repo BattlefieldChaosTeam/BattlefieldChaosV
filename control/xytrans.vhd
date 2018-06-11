@@ -28,5 +28,8 @@ begin
 	
 	players_out(0).life <= players_in(0).life;
 	players_out(1).life <= players_in(1).life;
+	
+	players_out(0).lem <= players_in(0).lem;
+	players_out(1).lem <= players_in(1).lem;
 
 end architecture xytrans_beh;

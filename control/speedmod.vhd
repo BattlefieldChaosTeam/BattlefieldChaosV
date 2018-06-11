@@ -27,8 +27,8 @@ architecture speedmod_beh of speedmod is
 	constant tlst: std_logic_vector(15 downto 0) := "0000000000000001";
 	constant mxspd: std_logic_vector(15 downto 0) := "0000000000000110";
 	
-	constant conspd : std_logic_vector(15 downto 0) := "0000000000000100";
-	constant conacc : std_logic_vector(15 downto 0) := "0000000000100000";
+	constant conspd : std_logic_vector(15 downto 0) := "0000000000000111";
+	constant conacc : std_logic_vector(15 downto 0) := "0000000000111000";
 	
 	constant wlkspd : std_logic_vector(15 downto 0) := "0000000000000001";
 	constant wlkacc : std_logic_vector(15 downto 0) := "0000000000000001";

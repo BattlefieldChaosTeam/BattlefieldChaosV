@@ -22,13 +22,14 @@ package types is
 		x, y: std_logic_vector(15 downto 0);
 		xs, ys : SPDSET; 
 		life: std_logic_vector(3 downto 0); -- life
+		lem : integer; -- last emit
 	end record PLAYER;
 	
 	type BARRIER is record
 		ax, ay, bx, by : std_logic_vector(15 downto 0);
 	end record BARRIER;
 	
-	type BARRIERS is array (0 to 10) of BARRIER;
+	type BARRIERS is array (0 to 18) of BARRIER;
 	
 	type BULLETS is array (0 to 20) of BULLET;
 	

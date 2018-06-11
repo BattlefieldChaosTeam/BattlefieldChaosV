@@ -48,7 +48,7 @@ begin
 			--if(ay <= y + wy and y + wy <= by and (not x + wx <= ax) and (not bx <= x)) then r <= '1'; end if;
 			-- pending t
 			
-			if(cnt < 10) then
+			if(cnt < 18) then
 				cnt := cnt + 1; -- next pending
 			end if;
 			

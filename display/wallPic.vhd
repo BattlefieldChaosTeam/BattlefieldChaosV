@@ -30,7 +30,7 @@ architecture bhv_wallPic of wallPic is
 
 	signal myBarriers: BARRIERS;
 	
-	signal barrier_idx : integer range 0 to 11;
+	signal barrier_idx : integer range 0 to 19;
 	signal addr : std_logic_vector(7 downto 0) := (others => '0');
 	signal rgba : std_logic_vector(9 downto 0);
 	signal addrInt: integer range 0 to 2000;
@@ -42,13 +42,13 @@ architecture bhv_wallPic of wallPic is
 	)
 	return integer is --返回对应的障碍物下标
 	begin
-		check_loop: for i in 0 to 9 loop
+		check_loop: for i in myBarriers'range loop
 			if conv_integer(myBarriers(i).ax) <= barrier_x and barrier_x < conv_integer(myBarriers(i).bx) 
 			and conv_integer(myBarriers(i).ay) <= barrier_y and barrier_y < conv_integer(myBarriers(i).by) then
 				return i;
 			end if;
 		end loop;
-		return 11;
+		return 19;
 	end function;
 
 begin
@@ -58,7 +58,7 @@ begin
 	begin
 		barrier_idx <= check_barrier(pix_x, pix_y);
 
-		if(barrier_idx >= 11) then
+		if(barrier_idx >= 19) then
 			pixel_out.valid <= false;
 		else
 			wallx <= conv_integer(myBarriers(barrier_idx).ax);

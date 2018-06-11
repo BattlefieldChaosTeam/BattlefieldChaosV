@@ -14,6 +14,8 @@ entity emitBullets is
 	rst, clk : in std_logic;
 	emitPlayer1, emitPlayer2 : in std_logic; -- whether player 1 and 2 emit bullet in the last operation
 	players: in PLAYERS; -- mainly to get the position of the player
+	lem1 : out integer;
+	lem2 : out integer;
 	lastBullets : in BULLETS;
 	nextBullets : out BULLETS
 	);
@@ -21,6 +23,7 @@ end entity emitBullets;
 
 architecture bhv_emitBullets of emitBullets is
 	constant hply : std_logic_vector(3 downto 0) := "1001";
+	constant clst : integer := 120;
 begin
 	process(clk, rst)
 	
@@ -51,9 +54,22 @@ begin
 				
 				when 30=>
 					slct_idx := 21;
+					
+					if(players(0).lem = 0) then
+						lem1 <= 0;
+					else
+						lem1 <= players(0).lem - 1;
+					end if;
+					
+					if(players(1).lem = 0) then
+						lem2 <= 0;
+					else 
+						lem2 <= players(1).lem - 1;
+					end if;
 				
-				when 32=>
-					if(emitPlayer1 = '1') then
+				when 50=>
+					if((players(0).lem = 0) and  (emitPlayer1 = '1')) then
+						lem1 <= clst;
 						for i in 0 to 20 loop
 							if(lastBullets(i).in_screen = '0') then -- select one that is not in the screen
 								slct_idx := i;
@@ -62,7 +78,7 @@ begin
 						end loop;
 					end if;
 				
-				when 55=>
+				when 80=>
 					if(slct_idx <= 20) then
 						if(players(0).xs.dir = '1' ) then nextBullets(slct_idx).x <= (players(0).x + PLY_X);
 							else nextBullets(slct_idx).x <= (players(0).x - PLY_X); end if;
@@ -71,11 +87,12 @@ begin
 						nextBullets(slct_idx).in_screen <= '1';
 					end if;
 				
-				when 60=>
+				when 100=>
 					slct_idx := 21;
 				
-				when 62=>
-					if(emitPlayer2 = '1') then
+				when 120=>
+					if((players(1).lem = 0) and  (emitPlayer2 = '1')) then
+						lem2 <= clst;
 						for i in 0 to 20 loop
 							if(lastBullets(i).in_screen = '0') then -- select one that is not in the screen
 								slct_idx := i;
@@ -84,7 +101,7 @@ begin
 						end loop;
 					end if;
 				
-				when 85=>
+				when 140=>
 					if(slct_idx <= 20) then
 						if(players(1).xs.dir = '1' ) then nextBullets(slct_idx).x <= (players(1).x + PLY_X);
 							else nextBullets(slct_idx).x <= (players(1).x - PLY_X); end if;
