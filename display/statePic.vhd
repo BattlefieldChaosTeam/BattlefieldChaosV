@@ -1,3 +1,4 @@
+-- 开始结束界面显示
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -8,8 +9,8 @@ entity statePic is
 	port(
 		pix_x: in integer range 0 to 639;
 		pix_y: in integer range 0 to 439;
-		player_num: in std_logic; --0鐜╁A,1鐜╁B
-		state: in std_logic_vector(2 downto 0);
+		player_num: in std_logic; --0表示玩家A，1表示玩家B
+		state: in std_logic_vector(2 downto 0); --传入的玩家状态
 		clk: in std_logic;
 		pixel_out: out Pixel
 	);
@@ -44,7 +45,7 @@ architecture statePic_bhv of statePic is
 	);
 	END component lose;
 
-	component holdon IS
+	component holdon IS --等待对手确认开始
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
@@ -53,7 +54,7 @@ architecture statePic_bhv of statePic is
 	);
 	END component holdon;
 	
-	component ensure IS
+	component ensure IS --确认开始
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (13 DOWNTO 0);
@@ -73,8 +74,8 @@ signal addrEnsure : std_logic_vector(13 downto 0) := (others => '0');
 signal addrLogoInt : integer range 0 to 20000 := 0;
 signal addrWinInt : integer range 0 to 20000 := 0;
 signal addrLoseInt : integer range 0 to 20000 := 0;
-signal addrHoldInt : integer range 0 to 20000 := 0; --绛夊緟瀵规柟寮€濮?
-signal addrEnsureInt : integer range 0 to 20000 := 0; --鎸夐敭纭寮€濮?
+signal addrHoldInt : integer range 0 to 20000 := 0; --等待对手确认开始
+signal addrEnsureInt : integer range 0 to 20000 := 0; --按键确认开始
 
 signal rgbaLogo : std_logic_vector(9 downto 0);
 signal rgbaWin : std_logic_vector(9 downto 0);
@@ -102,7 +103,7 @@ begin
 		addrHoldInt <= addrWinInt;
 		addrEnsureInt <= addrWinInt;
 
-		if(160 <= pix_x and pix_x < 480 and 150 <= pix_y and pix_y < 201) then
+		if(160 <= pix_x and pix_x < 480 and 150 <= pix_y and pix_y < 201) then --上方的logo部分
 			pixel_out.r(2) <= '1'; pixel_out.r(1) <= '1'; pixel_out.r(0) <= '1';
 			pixel_out.g(2) <= '0'; pixel_out.g(1) <= '0'; pixel_out.g(0) <= '0';
 			pixel_out.b(2) <= '0'; pixel_out.b(1) <= '0'; pixel_out.b(0) <= '0';
@@ -115,8 +116,8 @@ begin
 			else
 				pixel_out.valid <= true;
 			end if;
-		elsif(160 <= pix_x and pix_x < 480 and 300 <= pix_y and pix_y < 351) then
-			if (state = "000" or (state = "001" and player_num = '0') or (state = "010" and player_num = '1')) then
+		elsif(160 <= pix_x and pix_x < 480 and 300 <= pix_y and pix_y < 351) then  --下方的文字部分
+			if (state = "000" or (state = "001" and player_num = '0') or (state = "010" and player_num = '1')) then --按键确认开始
 				pixel_out.r(2) <= rgbaEnsure(9); pixel_out.r(1) <= rgbaEnsure(8); pixel_out.r(0) <= rgbaEnsure(7);
 				pixel_out.g(2) <= rgbaEnsure(6); pixel_out.g(1) <= rgbaEnsure(5); pixel_out.g(0) <= rgbaEnsure(4);
 				pixel_out.b(2) <= rgbaEnsure(3); pixel_out.b(1) <= rgbaEnsure(2); pixel_out.b(0) <= rgbaEnsure(1);
@@ -125,7 +126,7 @@ begin
 				else
 					pixel_out.valid <= true;
 				end if;
-			elsif (state = "001" and player_num = '1') or (state = "010" and player_num = '0') then --绛夊緟瀵规墜
+			elsif (state = "001" and player_num = '1') or (state = "010" and player_num = '0') then --等待确认开始
 				pixel_out.r(2) <= rgbaHold(9); pixel_out.r(1) <= rgbaHold(8); pixel_out.r(0) <= rgbaHold(7);
 				pixel_out.g(2) <= rgbaHold(6); pixel_out.g(1) <= rgbaHold(5); pixel_out.g(0) <= rgbaHold(4);
 				pixel_out.b(2) <= rgbaHold(3); pixel_out.b(1) <= rgbaHold(2); pixel_out.b(0) <= rgbaHold(1);
@@ -134,7 +135,7 @@ begin
 				else
 					pixel_out.valid <= true;
 				end if;
-			elsif (state = "101") then
+			elsif (state = "101") then --如果赢得比赛
 				pixel_out.r(2) <= rgbaWin(9); pixel_out.r(1) <= rgbaWin(8); pixel_out.r(0) <= rgbaWin(7);
 				pixel_out.g(2) <= rgbaWin(6); pixel_out.g(1) <= rgbaWin(5); pixel_out.g(0) <= rgbaWin(4);
 				pixel_out.b(2) <= rgbaWin(3); pixel_out.b(1) <= rgbaWin(2); pixel_out.b(0) <= rgbaWin(1);
@@ -143,7 +144,7 @@ begin
 				else
 					pixel_out.valid <= true;
 				end if;
-			elsif (state = "110") then
+			elsif (state = "110") then --如果玩家输掉了
 				pixel_out.r(2) <= rgbaLose(9); pixel_out.r(1) <= rgbaLose(8); pixel_out.r(0) <= rgbaLose(7);
 				pixel_out.g(2) <= rgbaLose(6); pixel_out.g(1) <= rgbaLose(5); pixel_out.g(0) <= rgbaLose(4);
 				pixel_out.b(2) <= rgbaLose(3); pixel_out.b(1) <= rgbaLose(2); pixel_out.b(0) <= rgbaLose(1);

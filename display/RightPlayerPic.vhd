@@ -1,6 +1,4 @@
--- Read from rom and return rgb value to render
--- player1 : 27*40
--- player2 : 25*35
+-- 读取朝右的玩家像素信息
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -52,16 +50,20 @@ begin
 	u1 : onetoone port map(address => addr1_1, clock => clk, q => rgba1_1);--player1 枪口向右
 	u3 : twotoone port map(address => addr2_1, clock => clk, q => rgba2_1); --player2 枪口向右
 
+	--转换地址
 	addrInt1_1 <= (pix_y - player_y) * conv_integer(unsigned(PLY_X)) + (pix_x - player_x);
 	addr1_1 <= conv_std_logic_vector(addrInt1_1, 10);
 
 	addrInt2_1 <= (pix_y - player_y) * conv_integer(unsigned(PLY_X)) + (pix_x - player_x);
 	addr2_1 <= conv_std_logic_vector(addrInt2_1, 10);
-	
+
+	--判断像素点是否有效	
 	pixel_out.valid <= false when pix_x - player_x >= conv_integer(unsigned(PLY_X)) or pix_x < player_x or pix_y - player_y >= conv_integer(unsigned(PLY_Y)) or pix_y < player_y else
 					   false when player_num = '0' and rgba1_1(0) = '0' else
 					   false when player_num = '1' and rgba2_1(0) = '0' else
 					   true;
+
+	--将读取到的信息进行复制
 	pixel_out.r <= rgba1_1(9 downto 7) when player_num = '0' else
 				   rgba2_1(9 downto 7);
 	pixel_out.g <= rgba1_1(6 downto 4) when player_num = '0' else

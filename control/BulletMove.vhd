@@ -1,9 +1,9 @@
+-- 子弹移动模块
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use work.types.all;
 
--- 子弹移动模块
 entity BulletMove is
 	port(
 	rst, clk: in std_logic;
@@ -13,11 +13,11 @@ entity BulletMove is
 end entity BulletMove;
 
 architecture bhv of BulletMove is 
-	constant bullet_speed : std_logic_vector(15 downto 0) := "0000000000000001"; --子弹的长度，速度5和宽度
-	constant bullet_length : std_logic_vector(15 downto 0) := "0000000000010100"; --20
-	constant bullet_width : std_logic_vector(15 downto 0) := "0000000000001111"; --15
-	constant vga_length : std_logic_vector(15 downto 0) := "0000101000000000"; -- 2560
-	constant vga_width : std_logic_vector(15 downto 0) := "0000011110000000"; -- 1920
+	constant bullet_speed : std_logic_vector(15 downto 0) := "0000000000000001"; --子弹的速度2
+	constant bullet_length : std_logic_vector(15 downto 0) := "0000000000010100"; --子弹的长度20
+	constant bullet_width : std_logic_vector(15 downto 0) := "0000000000001111"; --子弹的宽度15
+	constant vga_length : std_logic_vector(15 downto 0) := "0000101000000000"; -- vga 长度2560
+	constant vga_width : std_logic_vector(15 downto 0) := "0000011110000000"; -- vga 宽度1920
 	signal bullet_tep : BULLETS;
 	type BULX is array (0 to 20) of std_logic_vector(15 downto 0);
 	signal bulletx: BULX;
@@ -72,14 +72,6 @@ begin
 				
 				when 700=> --将子弹的状态输出
 					nextBullets <= bullet_tep;
-					--for i in 0 to 20 loop --更新输出
-					--	nextBullets(i).dir <= bullet_tep(i).dir;
-					--	nextBullets(i).in_screen <= bullet_tep(i).in_screen;
-					--	if(bullet_tep(i).in_screen = '1') then
-					--		nextBullets(i).x <= bullet_tep(i).x;
-					--		nextBullets(i).y <= bullet_tep(i).y;
-					--	end if;
-					--end loop;
 				
 				when others=>
 					

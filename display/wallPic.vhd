@@ -1,4 +1,4 @@
--- bullet 20 * 10
+-- 障碍物的纹理信息
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
@@ -11,8 +11,8 @@ entity wallPic is
 	port(
 		pix_x: in integer range 0 to 2559;
 		pix_y: in integer range 0 to 1919;
-		barrier_array: in BARRIERS;
-		pixel_out: out Pixel;
+		barrier_array: in BARRIERS; --传入障碍物
+		pixel_out: out Pixel; --输出像素坐标
 		clk: in std_logic
 	);
 end entity wallPic;
@@ -40,7 +40,7 @@ architecture bhv_wallPic of wallPic is
 	function check_barrier(
 		barrier_x, barrier_y: integer
 	)
-	return integer is --返回对应的障碍物下标
+	return integer is --返回请求坐标点对应的障碍物下标
 	begin
 		check_loop: for i in myBarriers'range loop
 			if conv_integer(myBarriers(i).ax) <= barrier_x and barrier_x < conv_integer(myBarriers(i).bx) 
@@ -63,9 +63,11 @@ begin
 		else
 			wallx <= conv_integer(myBarriers(barrier_idx).ax);
 			wally <= conv_integer(myBarriers(barrier_idx).ay);
-			realx <= pix_x - wallx - ((pix_x - wallx) mod 20) * 20;
-			addrInt <= (pix_y - wally) * 20 + realx + 2;
+			realx <= pix_x - wallx - ((pix_x - wallx) mod 20) * 20; --每20个像素点图像开始循环
+			addrInt <= (pix_y - wally) * 20 + realx + 2; --坐标点的int地址
 			addr <= conv_std_logic_vector(addrInt, 8);
+
+			--将读取的像素进行显示
 			pixel_out.r(2) <= rgba(9); pixel_out.r(1) <= rgba(8); pixel_out.r(0) <= rgba(7);
 			pixel_out.g(2) <= rgba(6); pixel_out.g(1) <= rgba(5); pixel_out.g(0) <= rgba(4);
 			pixel_out.b(2) <= rgba(3); pixel_out.b(1) <= rgba(2); pixel_out.b(0) <= rgba(1);
