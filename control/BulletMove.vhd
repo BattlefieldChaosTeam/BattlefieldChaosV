@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use work.types.all;
 
--- 子弹移动，需要另外给出新加入的子弹和去除的子弹
+-- 子弹移动模块
 entity BulletMove is
 	port(
 	rst, clk: in std_logic;
@@ -25,7 +25,7 @@ begin
 	process(clk, rst)
 	variable cnt : integer;
 	begin
-		if(rst = '1') then
+		if(rst = '1') then --如果要reset，将所有的状态还原
 		
 			for i in 0 to 20 loop
 				nextBullets(i).in_screen <= '0';
@@ -43,7 +43,7 @@ begin
 					bullet_tep <= lastBullets;
 					
 				when 100=>
-					for i in 0 to 20 loop --更新坐标
+					for i in 0 to 20 loop --根据子弹的速度更新坐标
 						if(bullet_tep(i).dir = '1') then
 							bulletx(i) <= bullet_tep(i).x + bullet_speed;
 						else
@@ -70,7 +70,7 @@ begin
 						end if;
 					end loop;	
 				
-				when 700=>
+				when 700=> --将子弹的状态输出
 					nextBullets <= bullet_tep;
 					--for i in 0 to 20 loop --更新输出
 					--	nextBullets(i).dir <= bullet_tep(i).dir;
